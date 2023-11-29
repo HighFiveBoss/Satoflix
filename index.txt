@@ -1,10 +1,10 @@
-Filmlane - Best movie collections
+Satoflix - Best movie collections
 
 
 
 # HEADER
 
-alt = Filmlane logo
+alt = Satoflix logo
 
 <ion-icon name="search-outline"></ion-icon>
 
@@ -19,7 +19,7 @@ Sign in
 
 <ion-icon name="reorder-two"></ion-icon>
 
-alt = Filmlane logo
+alt = Satoflix logo
 
 <ion-icon name="close-outline"></ion-icon>
 
@@ -39,7 +39,7 @@ Pricing
 
 # HERO
 
-Filmlane
+Satoflix
 Unlimited Movie, TVs Shows, & More.
 
 PG 18
@@ -255,7 +255,7 @@ Get started
 
 # FOOTER
 
-alt = Filmlane logo
+alt = Satoflix logo
 
 Home
 Movie
