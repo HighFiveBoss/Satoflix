@@ -5,17 +5,17 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= movie %></title>
+  <title><%= movieDetails.title.title %></title>
 
   <!-- 
     - favicon
   -->
-  <link rel="shortcut icon" href="../public/images/Sfavicon.png" type="image/svg+xml">
+  <link rel="shortcut icon" href="images/Sfavicon.png" type="image/svg+xml">
 
   <!-- 
     - custom css link
   -->
-  <link rel="stylesheet" href="../public/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 
   <!-- 
     - google font link
@@ -36,8 +36,8 @@
 
       <div class="overlay" data-overlay></div>
 
-      <a href="./index.html" class="logo">
-        <img src="../public/images/SATOFLIXlogo.png" alt="Satoflix logo">
+      <a href="/" class="logo">
+        <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
       </a>
 
       <div class="header-actions">
@@ -69,8 +69,8 @@
 
         <div class="navbar-top">
 
-          <a href="./index.html" class="logo">
-            <img src="../public/images/SATOFLIXlogo.png" alt="Satoflix logo">
+          <a href="/" class="logo">
+            <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
           </a>
 
           <button class="menu-close-btn" data-menu-close-btn>
@@ -82,7 +82,7 @@
         <ul class="navbar-list">
 
           <li>
-            <a href="./index.html" class="navbar-link">Home</a>
+            <a href="/" class="navbar-link">Home</a>
           </li>
 
           <li>
@@ -158,7 +158,7 @@
 
           <figure class="movie-detail-banner">
 
-            <img src="<%= movieImageLink %>" alt="<%= movie %> movie poster">
+            <img src="<%= movieDetails.title.image.url %>" alt="<%= movieDetails.title.title %> movie poster">
 
             <button class="play-btn">
               <ion-icon name="play-circle-outline"></ion-icon>
@@ -171,19 +171,25 @@
             <p class="detail-subtitle">New Episodes</p>
 
             <h1 class="h1 detail-title">
-              <strong><%= movie %></strong>
+              <strong><%= movieDetails.title.title %></strong>
             </h1>
 
             <div class="meta-wrapper">
 
               <div class="badge-wrapper">
-                <div class="badge badge-fill"><%= movieAgeLimit  %></div>
+                <div class="badge badge-fill"><% if(movieDetails.certificates) { %>
+                <%= movieDetails.certificates.US[0].certificate %>
+                <% } %>
+                </div>
 
-                <div class="badge badge-outline"><%= movieResolution  %></div>
+                <div class="badge badge-outline">2K</div>
               </div>
 
               <div class="ganre-wrapper">
-                <a href="#"><%= movieGenre  %></a>
+                <a href="#"><% if(movieDetails.genres) { %>
+                  <%= movieDetails.genres  %>
+                  <% } %>
+                </a>
               </div>
 
               <div class="date-time">
@@ -191,20 +197,20 @@
                 <div>
                   <ion-icon name="calendar-outline"></ion-icon>
 
-                  <time><%= movieDate  %></time>
+                  <time><%= movieDetails.title.year  %></time>
                 </div>
 
                 <div>
                   <ion-icon name="time-outline"></ion-icon>
 
-                  <time><%= movieDuration  %></time>
+                  <time><%= movieDetails.title.runningTimeInMinutes  %></time>
                 </div>
 
               </div>
 
             </div>
 
-            <p class="storyline"><%= movieStory  %></p>
+            <p class="storyline"><%= movieDetails.plotSummary.text  %></p>
 
             <div class="details-actions">
 
@@ -228,7 +234,7 @@
 
             </div>
 
-            <a href="<%= movieImageLink  %>" download class="download-btn">
+            <a href="<%= movieDetails.title.image.url  %>" download class="download-btn">
               <span>Download</span>
 
               <ion-icon name="download-outline"></ion-icon>
@@ -250,156 +256,49 @@
       <section class="tv-series">
         <div class="container">
 
-          <p class="section-subtitle">Best TV Series</p>
-
-          <h2 class="h2 section-title">World Best TV Series</h2>
+          <h2 class="h2 section-title">Related Movies</h2>
 
           <ul class="movies-list">
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="<%= randomMovieImageLink1  %>" alt="<%= randomMovie1  %> movie poster">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title"><%= randomMovie1  %></h3>
+            <% relatedMoviesDetails.forEach((series, index) => { %>
+              <li>
+                <div class="movie-card">
+          
+                  <form id="seriesDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
+                    <input type="hidden" name="movieName" value="<%= series.title %>">
+                    <input type="hidden" name="movieId" value="<%= series.id.slice(7, -1) %>">
+                  </form>
+          
+                  <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+                    <figure class="card-banner">
+                      <img src="<%= series.url %>" alt="<%= series.title %> movie poster">
+                    </figure>
                   </a>
-
-                  <time><%= randomMovieDate1  %></time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge badge-outline"><%= randomMovieResolution1  %></div>
-
-                  <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time><%= randomMovieDurationTime1  %></time>
+          
+                  <div class="title-wrapper">
+                    <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+                      <h3 class="card-title"><%= series.title %></h3>
+                    </a>
+          
+                    <time datetime="<%= series.year %>"><%= series.year %></time>
                   </div>
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data><%= randomMovieRating1  %></data>
+          
+                  <div class="card-meta">
+                    <div class="badge badge-outline">2K</div>
+          
+                    <div class="duration">
+                      <ion-icon name="time-outline"></ion-icon>
+                      <time datetime="PT<%= series.runningTimeInMinutes %>M"><%= series.runningTimeInMinutes %></time>
+                    </div>
+          
+                    <div class="rating">
+                      <ion-icon name="star"></ion-icon>
+                      <data><%= series.rating %></data>
+                    </div>
                   </div>
+          
                 </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="<%= randomMovieImageLink2  %>" alt="<%= randomMovie2  %> movie poster">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title"><%= randomMovie2  %></h3>
-                  </a>
-
-                  <time><%= randomMovieDate2  %></time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge badge-outline"><%= randomMovieResolution2  %></div>
-
-                  <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time><%= randomMovieDurationTime2  %></time>
-                  </div>
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data><%= randomMovieRating2  %></data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="<%= randomMovieImageLink3  %>" alt="<%= randomMovie3  %> movie poster">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title"><%= randomMovie3  %></h3>
-                  </a>
-
-                  <time><%= randomMovieDate3  %></time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge badge-outline"><%= randomMovieResolution3  %></div>
-
-                  <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time><%= randomMovieDurationTime3  %></time>
-                  </div>
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data><%= randomMovieRating3  %></data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="<%= randomMovieImageLink4  %>" alt="<%= randomMovie4  %> movie poster">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title"><%= randomMovie4  %></h3>
-                  </a>
-
-                  <time><%= randomMovieDate4  %></time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge badge-outline"><%= randomMovieResolution4  %></div>
-
-                  <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time><%= randomMovieDurationTime4  %></time>
-                  </div>
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data><%= randomMovieRating4  %></data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
+              </li>
+            <% }); %>
           </ul>
 
         </div>
@@ -423,14 +322,14 @@
 
         <div class="footer-brand-wrapper">
 
-          <a href="./index.html" class="logo">
-            <img src="../public/images/SATOFLIXlogo.png" alt="Satoflix logo">
+          <a href="/" class="logo">
+            <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
           </a>
 
           <ul class="footer-list">
 
             <li>
-              <a href="./index.html" class="footer-link">Home</a>
+              <a href="/" class="footer-link">Home</a>
             </li>
 
             <li>
@@ -517,7 +416,7 @@
           &copy; 2022 <a href="#">codewithsadee</a>. All Rights Reserved
         </p>
 
-        <img src="../public/images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
+        <img src="images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
 
       </div>
     </div>
