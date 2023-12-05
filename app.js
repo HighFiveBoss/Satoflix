@@ -116,6 +116,11 @@ async function getMoreLikeThis(id, limit = 10) {
     }
 }
 
+app.get("./login.ejs", (req, res) => {
+    res.render("login.ejs");
+});
+
+
 //randomMovieImageLink1 randomMovie1 randomMovieDate1 randomMovieResolution1 randomMovieDurationTime1 randomMovieRating1
 
 app.get("/", async (req, res) => {

@@ -57,7 +57,12 @@
           </select>
         </div>
 
-        <button class="btn btn-primary">Sign in</button>
+        <button id="btn btn-primary">Sign in</button>
+        <script>
+          document.getElementById('btn btn-primary').addEventListener('click', function() {
+            window.open('./login.html', '_blank');
+          });
+        </script>
 
       </div>
 
