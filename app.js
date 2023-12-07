@@ -4,7 +4,8 @@ import axios from "axios";
 
 const app = express();
 const port = 3000;
-const APIKey = '92c82bfb05msh7f5fda15c6bcfa4p104ebfjsnee15a1104b2d';
+const APIKey0 = 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7';
+const APIKey1 = '74c0434c46msh3a062b2096052f9p171104jsnd24893c2aeb7';
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,14 +22,14 @@ async function getUpcomingMovies(limit = 20) {
             today: today.toISOString().slice(0, 10)
         },
         headers: {
-            'X-RapidAPI-Key': APIKey,
+            'X-RapidAPI-Key': APIKey1,
             'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
         }
     };
 
     try {
         const response = await axios.request(options);
-        return response.data.slice(0 , limit);
+        return response.data.slice(0, limit);
     } catch (error) {
         console.error(error);
     }
@@ -40,7 +41,7 @@ async function getTopRatedMovies(limit = 20) {
         method: 'GET',
         url: 'https://imdb8.p.rapidapi.com/title/get-top-rated-movies',
         headers: {
-            'X-RapidAPI-Key': APIKey,
+            'X-RapidAPI-Key': APIKey1,
             'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
         }
     };
@@ -59,7 +60,7 @@ async function getTopRatedSeries(limit = 20) {
         method: 'GET',
         url: 'https://imdb8.p.rapidapi.com/title/get-top-rated-tv-shows',
         headers: {
-            'X-RapidAPI-Key': APIKey,
+            'X-RapidAPI-Key': APIKey1,
             'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
         }
     };
@@ -75,16 +76,17 @@ async function getTopRatedSeries(limit = 20) {
 async function getDetails(id) {
     const options = {
         method: 'GET',
-        url: 'https://imdb8.p.rapidapi.com/title/get-overview-details',
+        url: 'https://movie-database-alternative.p.rapidapi.com/',
         params: {
-            tconst: id,
-            currentCountry: 'US'
+            r: 'json',
+            i: id
         },
         headers: {
-            'X-RapidAPI-Key': APIKey,
-            'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
+            'X-RapidAPI-Key': APIKey0,
+            'X-RapidAPI-Host': 'movie-database-alternative.p.rapidapi.com'
         }
     };
+
 
     try {
         const response = await axios.request(options);
@@ -103,7 +105,7 @@ async function getMoreLikeThis(id, limit = 10) {
             tconst: id
         },
         headers: {
-            'X-RapidAPI-Key': APIKey,
+            'X-RapidAPI-Key': APIKey1,
             'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
         }
     };
@@ -116,10 +118,19 @@ async function getMoreLikeThis(id, limit = 10) {
     }
 }
 
-app.get("./login.ejs", (req, res) => {
+app.get("/login.ejs", (req, res) => {
     res.render("login.ejs");
 });
 
+function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+
+async function waitOneSec() {
+    console.log('start timer');
+    await delay(1000);
+    console.log('after 1 second');
+}
 
 //randomMovieImageLink1 randomMovie1 randomMovieDate1 randomMovieResolution1 randomMovieDurationTime1 randomMovieRating1
 
@@ -130,31 +141,32 @@ app.get("/", async (req, res) => {
 
 
     const upcomingMoviesIds = upcomingMovies.map(item => item.id.slice(7, -1)),
-    topRatedMoviesIds = topRatedMovies.map(item => item.id.slice(7, -1)),
-    topRatedSeriesIds = topRatedSeries.map(item => item.id.slice(7, -1));
+        topRatedMoviesIds = topRatedMovies.map(item => item.id.slice(7, -1)),
+        topRatedSeriesIds = topRatedSeries.map(item => item.id.slice(7, -1));
 
-    const upcomingMoviesDetails = [];
+    const upcomingMoviesDetails = await Promise.all(
+        upcomingMoviesIds.map(async (upcomingMovieId) => {
+            const { imdbID, Title, Poster, Year } = await getDetails(upcomingMovieId);
+            return { imdbID, Title, Poster, Year };
+        })
+    );
+    await waitOneSec();
+        
+    const topRatedMoviesDetails = await Promise.all(
+        topRatedMoviesIds.map(async (topRatedMovieId) => {
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(topRatedMovieId);
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+        })
+    );
 
-    for (const upcomingMovieId of upcomingMoviesIds) {
-        const { id, title: { image: { url }, title, year } } = await getDetails(upcomingMovieId); 
-        upcomingMoviesDetails.push({ id, url, title, year });
-    };
+   await waitOneSec();
 
-    const topRatedMoviesDetails = [];
-
-    for (const topRatedMovieId of topRatedMoviesIds) {
-        const { id, title: { image: { url }, runningTimeInMinutes, title, year }, ratings: { rating } } = await getDetails(topRatedMovieId);
-        topRatedMoviesDetails.push({ id, url, title, year, runningTimeInMinutes, rating});
-    };
-
-    const topRatedSeriesDetails = [];
-
-    for (const topRatedSeriesId of topRatedSeriesIds) {
-        const { id, title: { image: { url }, runningTimeInMinutes, title, year}, ratings: { rating } } = await getDetails(topRatedSeriesId);
-        topRatedSeriesDetails.push({ id, url, runningTimeInMinutes, title, year, rating});
-    };
-
-
+    const topRatedSeriesDetails = await Promise.all(
+        topRatedSeriesIds.map(async (topRatedSeriesId) => {
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(topRatedSeriesId);
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+        })
+    );
 
     res.render("index.ejs", {
         upcomingMovies: upcomingMoviesDetails,
@@ -170,11 +182,13 @@ app.post("/movie-details.ejs", async (req, res) => {
 
     const relatedMoviesIds = await getMoreLikeThis(id, 4);
 
-    const relatedMoviesDetails = [];
-    for (const relatedMoviesId of relatedMoviesIds) {
-        const { id, title: { image: { url }, runningTimeInMinutes, title, year}, ratings: { rating } } = await getDetails(relatedMoviesId.slice(7, -1));
-        relatedMoviesDetails.push({ id, url, runningTimeInMinutes, title, year, rating});
-    };
+
+    const relatedMoviesDetails = await Promise.all(
+        relatedMoviesIds.map(async (relatedMoviesId) => {
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(relatedMoviesId.slice(7, -1));
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+        })
+    );
 
 
     res.render("movie-details.ejs", {

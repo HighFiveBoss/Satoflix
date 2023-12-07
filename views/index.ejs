@@ -60,7 +60,7 @@
         <button id="btn btn-primary">Sign in</button>
         <script>
           document.getElementById('btn btn-primary').addEventListener('click', function() {
-            window.open('./login.html', '_blank');
+            window.open('/login.ejs', '_blank');
           });
         </script>
 
@@ -253,23 +253,23 @@
             <% upcomingMovies.forEach((movie, index) => { %>
               <li>
                 <div class="movie-card">
-                  <form id="movieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                    <input type="hidden" name="movieName" value="<%= movie.title %>">
-                    <input type="hidden" name="movieId" value="<%= movie.id.slice(7, -1) %>">
+                  <form id="upcomingMovieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
+                    <input type="hidden" name="movieName" value="<%= movie.Title %>">
+                    <input type="hidden" name="movieId" value="<%= movie.imdbID %>">
                   </form>
           
-                  <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
+                  <a href="./movie-details.ejs" onclick="document.getElementById('upcomingMovieDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
-                      <img src="<%= movie.url %>" alt="<%= movie.title %> movie poster">
+                      <img src="<%= movie.Poster %>" alt="<%= movie.Title %> movie poster">
                     </figure>
                   </a>
           
                   <div class="title-wrapper">
                     <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= movie.title %></h3>
+                      <h3 class="card-title"><%= movie.Title %></h3>
                     </a>
           
-                    <time datetime="<%= movie.year %>"><%= movie.year %></time>
+                    <time datetime="<%= movie.Year %>"><%= movie.Year %></time>
                   </div>
                 </div>
               </li>
@@ -401,22 +401,22 @@
                 <div class="movie-card">
           
                   <form id="movieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                    <input type="hidden" name="movieName" value="<%= movie.title %>">
-                    <input type="hidden" name="movieId" value="<%= movie.id.slice(7, -1) %>">
+                    <input type="hidden" name="movieName" value="<%= movie.Title %>">
+                    <input type="hidden" name="movieId" value="<%= movie.imdbID %>">
                   </form>
           
                   <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
-                      <img src="<%= movie.url %>" alt="<%= movie.title %> movie poster">
+                      <img src="<%= movie.Poster %>" alt="<%= movie.Title %> movie poster">
                     </figure>
                   </a>
           
                   <div class="title-wrapper">
                     <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= movie.title %></h3>
+                      <h3 class="card-title"><%= movie.Title %></h3>
                     </a>
           
-                    <time datetime="<%= movie.year %>"><%= movie.year %></time>
+                    <time datetime="<%= movie.Year %>"><%= movie.Year %></time>
                   </div>
           
                   <div class="card-meta">
@@ -424,12 +424,12 @@
           
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= movie.runningTimeInMinutes %>M"><%= movie.runningTimeInMinutes %></time>
+                      <time datetime="PT<%= movie.Runtime.slice(0, -4) %>M"><%= movie.Runtime.slice(0, -4) %></time>
                     </div>
           
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= movie.rating %></data>
+                      <data><%= movie.imdbRating %></data>
                     </div>
                   </div>
           
@@ -463,22 +463,22 @@
                 <div class="movie-card">
           
                   <form id="seriesDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                    <input type="hidden" name="movieName" value="<%= series.title %>">
-                    <input type="hidden" name="movieId" value="<%= series.id.slice(7, -1) %>">
+                    <input type="hidden" name="movieName" value="<%= series.Title %>">
+                    <input type="hidden" name="movieId" value="<%= series.imdbID %>">
                   </form>
           
                   <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
-                      <img src="<%= series.url %>" alt="<%= series.title %> movie poster">
+                      <img src="<%= series.Poster %>" alt="<%= series.Title %> movie poster">
                     </figure>
                   </a>
           
                   <div class="title-wrapper">
                     <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= series.title %></h3>
+                      <h3 class="card-title"><%= series.Title %></h3>
                     </a>
           
-                    <time datetime="<%= series.year %>"><%= series.year %></time>
+                    <time datetime="<%= series.Year %>"><%= series.Year %></time>
                   </div>
           
                   <div class="card-meta">
@@ -486,12 +486,12 @@
           
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= series.runningTimeInMinutes %>M"><%= series.runningTimeInMinutes %></time>
+                      <time datetime="PT<%= series.Runtime.slice(0, -4) %>M"><%= series.Runtime.slice(0, -4) %></time>
                     </div>
           
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= series.rating %></data>
+                      <data><%= series.imdbRating %></data>
                     </div>
                   </div>
           

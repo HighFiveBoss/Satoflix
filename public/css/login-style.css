@@ -59,7 +59,7 @@ img {
 .login__form {
   position: relative;
   margin-inline: 1.5rem;
-  background-color: hsla(0, 0%, 100%, .01);
+  background-color: rgba(0, 0, 0, .8);
   border: 2px solid hsla(0, 0%, 100%, .7);
   padding: 2.5rem 1rem;
   color: var(--white-color);

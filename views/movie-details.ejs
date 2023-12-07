@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= movieDetails.title.title %></title>
+  <title><%= movieDetails.Title %></title>
 
   <!-- 
     - favicon
@@ -158,7 +158,7 @@
 
           <figure class="movie-detail-banner">
 
-            <img src="<%= movieDetails.title.image.url %>" alt="<%= movieDetails.title.title %> movie poster">
+            <img src="<%= movieDetails.Poster %>" alt="<%= movieDetails.Title %> movie poster">
 
             <button class="play-btn">
               <ion-icon name="play-circle-outline"></ion-icon>
@@ -171,14 +171,14 @@
             <p class="detail-subtitle">New Episodes</p>
 
             <h1 class="h1 detail-title">
-              <strong><%= movieDetails.title.title %></strong>
+              <strong><%= movieDetails.Title %></strong>
             </h1>
 
             <div class="meta-wrapper">
 
               <div class="badge-wrapper">
-                <div class="badge badge-fill"><% if(movieDetails.certificates) { %>
-                <%= movieDetails.certificates.US[0].certificate %>
+                <div class="badge badge-fill"><% if(movieDetails.imdbRating) { %>
+                <%= movieDetails.imdbRating %>
                 <% } %>
                 </div>
 
@@ -186,8 +186,8 @@
               </div>
 
               <div class="ganre-wrapper">
-                <a href="#"><% if(movieDetails.genres) { %>
-                  <%= movieDetails.genres  %>
+                <a href="#"><% if(movieDetails.Genre) { %>
+                  <%= movieDetails.Genre  %>
                   <% } %>
                 </a>
               </div>
@@ -197,20 +197,20 @@
                 <div>
                   <ion-icon name="calendar-outline"></ion-icon>
 
-                  <time><%= movieDetails.title.year  %></time>
+                  <time><%= movieDetails.Year  %></time>
                 </div>
 
                 <div>
                   <ion-icon name="time-outline"></ion-icon>
 
-                  <time><%= movieDetails.title.runningTimeInMinutes  %></time>
+                  <time><%= movieDetails.Runtime.slice(0, -4)  %></time>
                 </div>
 
               </div>
 
             </div>
 
-            <p class="storyline"><%= movieDetails.plotSummary.text  %></p>
+            <p class="storyline"><%= movieDetails.Plot  %></p>
 
             <div class="details-actions">
 
@@ -234,7 +234,7 @@
 
             </div>
 
-            <a href="<%= movieDetails.title.image.url  %>" download class="download-btn">
+            <a href="<%= movieDetails.Poster  %>" download class="download-btn">
               <span>Download</span>
 
               <ion-icon name="download-outline"></ion-icon>
@@ -264,22 +264,22 @@
                 <div class="movie-card">
           
                   <form id="seriesDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                    <input type="hidden" name="movieName" value="<%= series.title %>">
-                    <input type="hidden" name="movieId" value="<%= series.id.slice(7, -1) %>">
+                    <input type="hidden" name="movieName" value="<%= series.Title %>">
+                    <input type="hidden" name="movieId" value="<%= series.imdbID %>">
                   </form>
           
                   <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
-                      <img src="<%= series.url %>" alt="<%= series.title %> movie poster">
+                      <img src="<%= series.Poster %>" alt="<%= series.Title %> movie poster">
                     </figure>
                   </a>
           
                   <div class="title-wrapper">
                     <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= series.title %></h3>
+                      <h3 class="card-title"><%= series.Title %></h3>
                     </a>
           
-                    <time datetime="<%= series.year %>"><%= series.year %></time>
+                    <time datetime="<%= series.Year %>"><%= series.Year %></time>
                   </div>
           
                   <div class="card-meta">
@@ -287,12 +287,12 @@
           
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= series.runningTimeInMinutes %>M"><%= series.runningTimeInMinutes %></time>
+                      <time datetime="PT<%= series.Runtime.slice(0, -4) %>M"><%= series.Runtime.slice(0, -4) %></time>
                     </div>
           
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= series.rating %></data>
+                      <data><%= series.imdbRating %></data>
                     </div>
                   </div>
           
