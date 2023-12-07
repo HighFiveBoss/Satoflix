@@ -128,7 +128,7 @@ function delay(time) {
 
 async function waitOneSec() {
     console.log('start timer');
-    await delay(500);
+    await delay(750);
     console.log('after 1 second');
 }
 
