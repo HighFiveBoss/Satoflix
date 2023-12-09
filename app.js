@@ -1,11 +1,22 @@
 import express from "express";
 import bodyParser from "body-parser";
 import axios from "axios";
+import pg from "pg";
 
 const app = express();
 const port = 3000;
 const APIKey0 = 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7';
 const APIKey1 = '74c0434c46msh3a062b2096052f9p171104jsnd24893c2aeb7';
+
+const db = new pg.Client({
+    user: "postgres",
+    host: "localhost",
+    database: "Satoflixdb",
+    password: "salihkara",
+    port: 5432,
+  });
+db.connect();  
+
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -128,13 +139,18 @@ function delay(time) {
 
 async function waitOneSec() {
     console.log('start timer');
-    await delay(750);
+    await delay(1000);
     console.log('after 1 second');
 }
 
 //randomMovieImageLink1 randomMovie1 randomMovieDate1 randomMovieResolution1 randomMovieDurationTime1 randomMovieRating1
 
 app.get("/", async (req, res) => {
+    let upcomingMovies;
+    let topRatedMovies;
+    let topRatedSeries;
+    
+    /*
     const upcomingMovies = await getUpcomingMovies(4),
         topRatedMovies = await getTopRatedMovies(8),
         topRatedSeries = await getTopRatedSeries(4);
@@ -142,36 +158,130 @@ app.get("/", async (req, res) => {
 
     const upcomingMoviesIds = upcomingMovies.map(item => item.id.slice(7, -1)),
         topRatedMoviesIds = topRatedMovies.map(item => item.id.slice(7, -1)),
-        topRatedSeriesIds = topRatedSeries.map(item => item.id.slice(7, -1));
+        topRatedSeriesIds = topRatedSeries.map(item => item.id.slice(7, -1)); 
+
 
     const upcomingMoviesDetails = await Promise.all(
         upcomingMoviesIds.map(async (upcomingMovieId) => {
-            const { imdbID, Title, Poster, Year } = await getDetails(upcomingMovieId);
-            return { imdbID, Title, Poster, Year };
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(upcomingMovieId);
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
         })
     );
     await waitOneSec();
-        
+*/
+
+
+    /* sql insert
+    for(let i=0;i<upcomingMoviesDetails.length;i++){
+        db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime,imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+     [upcomingMoviesDetails[i].imdbID, upcomingMoviesDetails[i].Title, upcomingMoviesDetails[i].Poster, upcomingMoviesDetails[i].Year,
+     upcomingMoviesDetails[i].Runtime, null, upcomingMoviesDetails[i].Plot], (err, res) => {
+        if (err) {
+        console.error('Ekleme hatası:', err);
+      } else {
+        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+      }
+    });
+    }
+    */
+
+    db.query('SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = \'2023\' OR year = \'2024\')', (err, res) => {
+        if (err) {
+          console.error('Hata:', err);
+        } else {
+          console.log('Sonuçlar:', res.rows);
+          upcomingMovies=res.rows;
+          console.log("aaaaaaaaaaaaaaaaaaaaaaaa");
+          console.log(upcomingMovies);
+          // Sorgu sonucunda dönen verilere buradan erişebilirsiniz
+        }
+      });
+      await waitOneSec();
+      console.log("bbbbbbbbbbbbbbbbbbbbbbbbbb");
+      console.log(upcomingMovies);
+        /*
     const topRatedMoviesDetails = await Promise.all(
         topRatedMoviesIds.map(async (topRatedMovieId) => {
-            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(topRatedMovieId);
-            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(topRatedMovieId);
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
         })
     );
 
    await waitOneSec();
 
+   */
+
+   //console.log(topRatedMoviesDetails);
+  /* sql insert
+   for(let i=0;i<topRatedMoviesDetails.length;i++){
+    db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+     [topRatedMoviesDetails[i].imdbID, topRatedMoviesDetails[i].Title, topRatedMoviesDetails[i].Poster, topRatedMoviesDetails[i].Year, 
+     topRatedMoviesDetails[i].Runtime, topRatedMoviesDetails[i].imdbRating, topRatedMoviesDetails[i].Plot], (err, res) => {
+      if (err) {
+        console.error('Ekleme hatası:', err);
+      } else {
+        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+      }
+    });
+   }
+*/
+
+db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8', (err, res) => {
+    if (err) {
+      console.error('Hata:', err);
+    } else {
+      console.log('Sonuçlar:', res.rows);
+      topRatedMovies=res.rows;
+      // Burada res.rows içinde sorgu sonucu dönen verileri elde edebilirsiniz
+      
+    }
+  });
+  await waitOneSec();
+
+
+/*
     const topRatedSeriesDetails = await Promise.all(
         topRatedSeriesIds.map(async (topRatedSeriesId) => {
-            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(topRatedSeriesId);
-            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot} = await getDetails(topRatedSeriesId);
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
         })
     );
+    */
+
+    //console.log(topRatedSeriesDetails);
+/* sql insert
+    for(let i=0;i<topRatedSeriesDetails.length;i++){
+        db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+     [topRatedSeriesDetails[i].imdbID, topRatedSeriesDetails[i].Title, topRatedSeriesDetails[i].Poster, topRatedSeriesDetails[i].Year, 
+     topRatedSeriesDetails[i].Runtime, topRatedSeriesDetails[i].imdbRating, topRatedSeriesDetails[i].Plot], (err, res) => {
+      if (err) {
+        console.error('Ekleme hatası:', err);
+      } else {
+        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+      }
+    });
+    }
+  */ 
+
+    db.query('SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4', (err, res) => {
+        if (err) {
+          console.error('Hata:', err);
+        } else {
+          console.log('Sonuçlar:', res.rows);
+          topRatedSeries=res.rows;
+          // Sorgu sonucunda dönen verilere buradan erişebilirsiniz
+          
+        }
+      });
+      await waitOneSec();
+    
 
     res.render("index.ejs", {
-        upcomingMovies: upcomingMoviesDetails,
-        topRatedMovies: topRatedMoviesDetails,
-        topRatedSeries: topRatedSeriesDetails
+        
+        upcomingMovies: upcomingMovies,
+        topRatedMovies: topRatedMovies,
+        topRatedSeries: topRatedSeries
+        
     });
 });
 
@@ -185,11 +295,42 @@ app.post("/movie-details.ejs", async (req, res) => {
 
     const relatedMoviesDetails = await Promise.all(
         relatedMoviesIds.map(async (relatedMoviesId) => {
-            const { imdbID, Title, Poster, Year, Runtime, imdbRating } = await getDetails(relatedMoviesId.slice(7, -1));
-            return { imdbID, Title, Poster, Year, Runtime, imdbRating };
+            const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(relatedMoviesId.slice(7, -1));
+            return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
         })
     );
 
+    if(movieDetails.Type==="series"){
+        for(let i=0;i<relatedMoviesDetails.length;i++){
+            db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (series_id) DO NOTHING RETURNING *',
+         [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
+         relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
+          if (err) {
+            console.error('Ekleme hatası:', err);
+          } else {
+            console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+          }
+        });
+        }
+    }
+    else{
+        for(let i=0;i<relatedMoviesDetails.length;i++){
+            db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
+         [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
+         relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
+          if (err) {
+            console.error('Ekleme hatası:', err);
+          } else {
+            console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+          }
+        });
+        }
+    }    
+    
+
+
+    console.log(movieDetails.Plot);
+    console.log(movieDetails.Type);
 
     res.render("movie-details.ejs", {
         movieDetails: movieDetails,
