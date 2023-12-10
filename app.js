@@ -133,6 +133,35 @@ app.get("/login.ejs", (req, res) => {
     res.render("login.ejs");
 });
 
+app.get("/register.ejs", (req, res) => {
+    res.render("register.ejs");
+});
+
+app.post('/login.ejs', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    //res.send(`Gönderilen kullanıcı adı: ${email}`);
+    //res.send(`Gönderilen kullanıcı adı: ${password}`);
+    console.log(email);
+    console.log(password);
+    res.redirect('/');
+});
+
+app.post('/register.ejs', (req, res) => {
+    const password = req.body.password;
+    const username = req.body.username;
+    const email = req.body.email;
+
+    //res.send(`Gönderilen kullanıcı adı: ${email}`);
+    //res.send(`Gönderilen kullanıcı adı: ${username}`);
+    //res.send(`Gönderilen kullanıcı adı: ${password}`);
+    console.log(email);
+    console.log(username);
+    console.log(password);
+    res.redirect('/');
+});
+
 function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
@@ -191,14 +220,10 @@ app.get("/", async (req, res) => {
         } else {
           console.log('Sonuçlar:', res.rows);
           upcomingMovies=res.rows;
-          console.log("aaaaaaaaaaaaaaaaaaaaaaaa");
-          console.log(upcomingMovies);
-          // Sorgu sonucunda dönen verilere buradan erişebilirsiniz
         }
       });
       await waitOneSec();
-      console.log("bbbbbbbbbbbbbbbbbbbbbbbbbb");
-      console.log(upcomingMovies);
+
         /*
     const topRatedMoviesDetails = await Promise.all(
         topRatedMoviesIds.map(async (topRatedMovieId) => {
@@ -231,9 +256,7 @@ db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC L
       console.error('Hata:', err);
     } else {
       console.log('Sonuçlar:', res.rows);
-      topRatedMovies=res.rows;
-      // Burada res.rows içinde sorgu sonucu dönen verileri elde edebilirsiniz
-      
+      topRatedMovies=res.rows;     
     }
   });
   await waitOneSec();
@@ -269,8 +292,6 @@ db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC L
         } else {
           console.log('Sonuçlar:', res.rows);
           topRatedSeries=res.rows;
-          // Sorgu sonucunda dönen verilere buradan erişebilirsiniz
-          
         }
       });
       await waitOneSec();

@@ -10,20 +10,25 @@
       <!--=============== CSS ===============-->
       <link rel="stylesheet" href="css/login-style.css">
 
-      <title>Login Satoflix</title>
+      <title>Register Satoflix</title>
    </head>
    <body>
       <div class="login">
          <img src="images/satoflix_login.png" alt="image" class="login__bg">
 
          <form action="" class="login__form" method="POST">
-            <h1 class="login__title">Login</h1>
+            <h1 class="login__title">Sign Up</h1>
 
             <div class="login__inputs">
                <div class="login__box">
-                  <input type="email" placeholder="Email ID" name="email" required class="login__input">
+                  <input type="email" placeholder="Email ID" name="email" class="login__input">
                   <i class="ri-mail-fill"></i>
                </div>
+
+               <div class="login__box">
+                  <input type="text" placeholder="Username"  name="username" required class="login__input">
+                  <i class="ri-user-fill"></i>
+              </div>              
 
                <div class="login__box">
                   <input type="password" placeholder="Password" name="password" required class="login__input">
@@ -31,11 +36,9 @@
                </div>
             </div>
 
-            <button type="submit" class="login__button">Login</button>
+            <button type="submit" class="login__button">Sign Up</button>
 
-            <div class="login__register">
-               Don't have an account? <a href="register.ejs">Register</a>
-            </div>
+            
          </form>
       </div>
    </body>
