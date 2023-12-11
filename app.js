@@ -137,28 +137,96 @@ app.get("/register.ejs", (req, res) => {
     res.render("register.ejs");
 });
 
-app.post('/login.ejs', (req, res) => {
+app.post('/login.ejs', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
+    let flag =false;
 
-    //res.send(`Gönderilen kullanıcı adı: ${email}`);
-    //res.send(`Gönderilen kullanıcı adı: ${password}`);
     console.log(email);
     console.log(password);
-    res.redirect('/');
+
+    db.query(
+        `SELECT Users.*, Role.*
+         FROM Users
+         JOIN Role ON Users.role_id = Role.role_id
+         WHERE Users.email = $1 AND Users.password = $2`,
+        [email, password],
+        (err, res) => {
+        if (err) {
+            console.error('Hata:', err);
+          } else {
+            console.log('Sonuçlar:', res.rows);
+          }
+        if(res.rows.length>0 && res.rows[0].role_name=="user"){
+            console.log("user : "+res.rows[0].username +" log in");
+            //res.redirect('/');
+            flag=true;
+            console.log("sorgu içi flag: "+flag);
+           }
+        else if(res.rows.length>0 && res.rows[0].role_name=="admin"){
+            console.log("admin : "+res.rows[0].username +" log in");
+            //res.redirect('/');
+            flag=true;
+          }
+        else{
+            console.log("Login Failed! your username or password is incorrect please try again.");
+          }
+        }
+      );
+    
+    await waitOneSec();
+    console.log("wait önce si flag: "+flag);
+    if(flag){
+        console.log("if flag içeri : "+flag);
+        res.redirect('/');
+    }
+    else{
+        res.redirect('/login.ejs');
+    }
+    
 });
 
 app.post('/register.ejs', (req, res) => {
     const password = req.body.password;
     const username = req.body.username;
     const email = req.body.email;
+    let roleid;
 
-    //res.send(`Gönderilen kullanıcı adı: ${email}`);
-    //res.send(`Gönderilen kullanıcı adı: ${username}`);
-    //res.send(`Gönderilen kullanıcı adı: ${password}`);
     console.log(email);
     console.log(username);
     console.log(password);
+
+    db.query('INSERT INTO Role(role_name) VALUES($1) RETURNING *',
+     ["user"], (err, res) => {
+        if (err) {
+        console.error('Ekleme hatası:', err);
+      } else {
+        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+      }
+    });
+
+    db.query('SELECT role_id FROM Role ORDER BY role_id DESC LIMIT 1', (err, res) => {
+        if (err) {
+          console.error('Hata:', err);
+        } else {
+          console.log('Son eklenen veri:', res.rows[0]);
+          roleid=res.rows[0];
+          let roleidString = roleid.role_id.toString();
+          let roleidINTEGER = parseInt(roleidString);
+
+          console.log("sdsadsdadsasad" +typeof roleidINTEGER);
+          console.log("aaaaaaaaaaaaaa"+ roleidINTEGER);
+          db.query('INSERT INTO Users(username, email, password, role_id) VALUES($1, $2, $3, $4) RETURNING *',
+     [username, email, password, roleidINTEGER], (err, res) => {
+      if (err) {
+        console.error('Ekleme hatası:', err);
+      } else {
+        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+      }
+    });
+        }
+    });
+  
     res.redirect('/');
 });
 
