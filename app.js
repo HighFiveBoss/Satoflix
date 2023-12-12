@@ -592,6 +592,9 @@ app.post("/movie-details.ejs", async (req, res) => {
 
     if(movieDetails.Type==="series"){
         for(let i=0;i<relatedMoviesDetails.length;i++){
+            if(relatedMoviesDetails[i].imdbRating=='N/A'){
+              relatedMoviesDetails[i].imdbRating=null;
+            }          
             db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (series_id) DO NOTHING RETURNING *',
          [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
          relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
@@ -605,6 +608,9 @@ app.post("/movie-details.ejs", async (req, res) => {
     }
     else{
         for(let i=0;i<relatedMoviesDetails.length;i++){
+          if(relatedMoviesDetails[i].imdbRating=='N/A'){
+            relatedMoviesDetails[i].imdbRating=null;
+          } 
             db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
          [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
          relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
@@ -621,6 +627,8 @@ app.post("/movie-details.ejs", async (req, res) => {
 
     console.log(movieDetails.Plot);
     console.log(movieDetails.Type);
+    console.log("dsadsasdsadsadsadasd");
+    console.log(movieDetails);
 
     res.render("movie-details.ejs", {
         movieDetails: movieDetails,

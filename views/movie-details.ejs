@@ -57,7 +57,12 @@
           </select>
         </div>
 
-        <button class="btn btn-primary">Sign in</button>
+        <button id="btn btn-primary">Log in</button>
+        <script>
+          document.getElementById('btn btn-primary').addEventListener('click', function() {
+            window.location.href = '/login.ejs';
+          });
+        </script>
 
       </div>
 
@@ -168,7 +173,6 @@
 
           <div class="movie-detail-content">
 
-            <p class="detail-subtitle">New Episodes</p>
 
             <h1 class="h1 detail-title">
               <strong><%= movieDetails.Title %></strong>
@@ -413,10 +417,9 @@
       <div class="container">
 
         <p class="copyright">
-          &copy; 2022 <a href="#">codewithsadee</a>. All Rights Reserved
+          &copy; 2023 <a href="#">SATOFLIX</a>. All Rights Reserved
         </p>
 
-        <img src="images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
 
       </div>
     </div>
