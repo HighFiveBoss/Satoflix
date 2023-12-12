@@ -17,6 +17,7 @@ const db = new pg.Client({
   });
 db.connect();  
 
+let user;
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -137,6 +138,71 @@ app.get("/register.ejs", (req, res) => {
     res.render("register.ejs");
 });
 
+app.get("/profile.ejs", (req, res) => {
+  console.log("userrrrrr: "+user);
+  console.log(user.username);
+  //console.log(username);
+  console.log(user.email);
+  //console.log(email);
+    const username=user.username;
+    const email=user.email;
+
+  res.render("profile.ejs", {
+    username,
+    email,
+});
+});
+
+app.get("/password.ejs", (req, res) => {
+  res.render("password.ejs");
+});
+
+
+app.post('/profile.ejs', async (req, res) => {
+  const email = req.body.email;
+  const username = req.body.username;
+
+  try {
+    const query = `
+      UPDATE Users 
+      SET username = $1, email = $2
+      WHERE user_id = $3
+      RETURNING *`;
+    
+    const values = [username, email, user.user_id]; 
+
+    const result = await db.query(query, values);
+    console.log('Güncellenmiş satır:', result.rows[0]);
+    user=result.rows[0];
+  } catch (err) {
+    console.error('Hata:', err);
+  }
+  
+  res.redirect('/index-profile.ejs');
+});
+
+app.post('/password.ejs', async (req, res) => {
+  const password = req.body.newPassword;
+
+  try {
+    const query = `
+      UPDATE Users 
+      SET password = $1
+      WHERE user_id = $2
+      RETURNING *`;
+    
+    const values = [password, user.user_id]; 
+
+    const result = await db.query(query, values);
+    console.log('Güncellenmiş satır:', result.rows[0]);
+    user=result.rows[0];
+  } catch (err) {
+    console.error('Hata:', err);
+  }
+
+  res.redirect('/index-profile.ejs');
+});
+
 app.post('/login.ejs', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -156,6 +222,7 @@ app.post('/login.ejs', async (req, res) => {
             console.error('Hata:', err);
           } else {
             console.log('Sonuçlar:', res.rows);
+            user=res.rows[0];
           }
         if(res.rows.length>0 && res.rows[0].role_name=="user"){
             console.log("user : "+res.rows[0].username +" log in");
@@ -178,7 +245,7 @@ app.post('/login.ejs', async (req, res) => {
     console.log("wait önce si flag: "+flag);
     if(flag){
         console.log("if flag içeri : "+flag);
-        res.redirect('/');
+        res.redirect('/index-profile.ejs');
     }
     else{
         res.redirect('/login.ejs');
@@ -372,6 +439,140 @@ db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC L
         topRatedSeries: topRatedSeries
         
     });
+});
+
+///////index-profile
+
+app.get("/index-profile.ejs", async (req, res) => {
+  let upcomingMovies;
+  let topRatedMovies;
+  let topRatedSeries;
+  
+  /*
+  const upcomingMovies = await getUpcomingMovies(4),
+      topRatedMovies = await getTopRatedMovies(8),
+      topRatedSeries = await getTopRatedSeries(4);
+
+
+  const upcomingMoviesIds = upcomingMovies.map(item => item.id.slice(7, -1)),
+      topRatedMoviesIds = topRatedMovies.map(item => item.id.slice(7, -1)),
+      topRatedSeriesIds = topRatedSeries.map(item => item.id.slice(7, -1)); 
+
+
+  const upcomingMoviesDetails = await Promise.all(
+      upcomingMoviesIds.map(async (upcomingMovieId) => {
+          const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(upcomingMovieId);
+          return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
+      })
+  );
+  await waitOneSec();
+*/
+
+
+  /* sql insert
+  for(let i=0;i<upcomingMoviesDetails.length;i++){
+      db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime,imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+   [upcomingMoviesDetails[i].imdbID, upcomingMoviesDetails[i].Title, upcomingMoviesDetails[i].Poster, upcomingMoviesDetails[i].Year,
+   upcomingMoviesDetails[i].Runtime, null, upcomingMoviesDetails[i].Plot], (err, res) => {
+      if (err) {
+      console.error('Ekleme hatası:', err);
+    } else {
+      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+    }
+  });
+  }
+  */
+
+  db.query('SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = \'2023\' OR year = \'2024\')', (err, res) => {
+      if (err) {
+        console.error('Hata:', err);
+      } else {
+        console.log('Sonuçlar:', res.rows);
+        upcomingMovies=res.rows;
+      }
+    });
+    await waitOneSec();
+
+      /*
+  const topRatedMoviesDetails = await Promise.all(
+      topRatedMoviesIds.map(async (topRatedMovieId) => {
+          const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(topRatedMovieId);
+          return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
+      })
+  );
+
+ await waitOneSec();
+
+ */
+
+ //console.log(topRatedMoviesDetails);
+/* sql insert
+ for(let i=0;i<topRatedMoviesDetails.length;i++){
+  db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+   [topRatedMoviesDetails[i].imdbID, topRatedMoviesDetails[i].Title, topRatedMoviesDetails[i].Poster, topRatedMoviesDetails[i].Year, 
+   topRatedMoviesDetails[i].Runtime, topRatedMoviesDetails[i].imdbRating, topRatedMoviesDetails[i].Plot], (err, res) => {
+    if (err) {
+      console.error('Ekleme hatası:', err);
+    } else {
+      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+    }
+  });
+ }
+*/
+
+db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8', (err, res) => {
+  if (err) {
+    console.error('Hata:', err);
+  } else {
+    console.log('Sonuçlar:', res.rows);
+    topRatedMovies=res.rows;     
+  }
+});
+await waitOneSec();
+
+
+/*
+  const topRatedSeriesDetails = await Promise.all(
+      topRatedSeriesIds.map(async (topRatedSeriesId) => {
+          const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot} = await getDetails(topRatedSeriesId);
+          return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
+      })
+  );
+  */
+
+  //console.log(topRatedSeriesDetails);
+/* sql insert
+  for(let i=0;i<topRatedSeriesDetails.length;i++){
+      db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+   [topRatedSeriesDetails[i].imdbID, topRatedSeriesDetails[i].Title, topRatedSeriesDetails[i].Poster, topRatedSeriesDetails[i].Year, 
+   topRatedSeriesDetails[i].Runtime, topRatedSeriesDetails[i].imdbRating, topRatedSeriesDetails[i].Plot], (err, res) => {
+    if (err) {
+      console.error('Ekleme hatası:', err);
+    } else {
+      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+    }
+  });
+  }
+*/ 
+
+  db.query('SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4', (err, res) => {
+      if (err) {
+        console.error('Hata:', err);
+      } else {
+        console.log('Sonuçlar:', res.rows);
+        topRatedSeries=res.rows;
+      }
+    });
+    await waitOneSec();
+  
+
+  res.render("index-profile.ejs", {
+      
+      upcomingMovies: upcomingMovies,
+      topRatedMovies: topRatedMovies,
+      topRatedSeries: topRatedSeries
+      
+  });
 });
 
 app.post("/movie-details.ejs", async (req, res) => {
