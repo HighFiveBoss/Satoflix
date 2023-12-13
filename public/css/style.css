@@ -117,7 +117,10 @@ html {
   scroll-behavior: smooth;
 }
 
-body { background: var(--eerie-black); }
+body { 
+  background: var(--eerie-black);
+  box-sizing: border-box; 
+}
 
 body.active { overflow: hidden; }
 
@@ -1063,6 +1066,84 @@ body.active { overflow: hidden; }
 
 
 
+
+
+.comment-box,
+.post-comment .list{
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 2px #0002;
+}
+
+.comment-session{
+  width: 650px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.post-comment .list{
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.post-comment .list .user{
+  display: flex;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.comment-session .name{
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.post-comment .list .day{
+  font-size: 12px;
+}
+
+.post-comment .comment-post{
+  padding: 0 0 15px 58px;
+}
+
+.comment-box{
+  padding: 10px;
+  overflow: hidden;
+}
+
+.comment-box .user{
+  display: flex;
+  width: min-content;
+}
+
+.comment-box textarea{
+  background: #eee;
+  width: -webkit-fill-available;
+  height: 152px;
+  margin: 10px 0;
+  padding: 10px;
+  resize: inherit;
+  border-radius: 5px;
+  box-shadow: 0 0 0 1px #0003;
+}
+
+.comment-box textarea:focus-visible{
+  box-shadow: inset 0 0 0 1px #009cff;
+  outline: none;
+}
+
+.comment-box .comment-submit{
+  float: right;
+  padding: 6px 10px;
+  border: none;
+  background: #009cff;
+  color:#eee;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.comment-box .comment-submit:hover{
+  background: #0076bf;
+}
 
 
 /*-----------------------------------*\

@@ -18,6 +18,16 @@ const db = new pg.Client({
 db.connect();  
 
 let user;
+let idArray = [];
+let login=false;
+
+const currentDate = new Date();
+const currentYear = currentDate.getFullYear();
+const currentMonth = currentDate.getMonth()+1;
+const currentDay = currentDate.getDate();
+
+const date=currentDay+"-"+currentMonth+"-"+currentYear;
+console.log(date);
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -246,6 +256,7 @@ app.post('/login.ejs', async (req, res) => {
     if(flag){
         console.log("if flag içeri : "+flag);
         res.redirect('/index-profile.ejs');
+        login=true;
     }
     else{
         res.redirect('/login.ejs');
@@ -576,19 +587,27 @@ await waitOneSec();
 });
 
 app.post("/movie-details.ejs", async (req, res) => {
-    const id = req.body["movieId"];
+    let commentArray=[];
+    let id = req.body["movieId"];
+    console.log(id);
+    idArray.push(id);
+    id=idArray[idArray.length - 1];
+    if(id==undefined){
+      id=idArray[idArray.length - 2];
+    }
+    console.log(id);
+    let movieDetails = await getDetails(id);
+    console.log(movieDetails);
+    let relatedMoviesIds = await getMoreLikeThis(id, 4);
+    console.log(relatedMoviesIds);
 
-    const movieDetails = await getDetails(id);
-
-    const relatedMoviesIds = await getMoreLikeThis(id, 4);
-
-
-    const relatedMoviesDetails = await Promise.all(
+    let relatedMoviesDetails = await Promise.all(
         relatedMoviesIds.map(async (relatedMoviesId) => {
             const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(relatedMoviesId.slice(7, -1));
             return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
         })
     );
+    console.log(relatedMoviesDetails);
 
     if(movieDetails.Type==="series"){
         for(let i=0;i<relatedMoviesDetails.length;i++){
@@ -630,9 +649,87 @@ app.post("/movie-details.ejs", async (req, res) => {
     console.log("dsadsasdsadsadsadasd");
     console.log(movieDetails);
 
+    ///// comment yazma
+    if(login){
+      let comment = req.body.comment;
+      let username=user.username;
+      
+      console.log("comment : "+comment);
+      console.log("username : "+username);
+      if(typeof comment !== 'undefined' && movieDetails.Type==="movie"){
+        db.query('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES($1, $2, $3, $4) RETURNING *',
+        [comment, date,user.user_id, id], (err, res) => {
+         if (err) {
+           console.error('Ekleme hatası:', err);
+         } else {
+           console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+         }
+       });
+      } else if(typeof comment !== 'undefined' && movieDetails.Type==="series"){
+        db.query('INSERT INTO Reviews(comment, date, user_id, series_id) VALUES($1, $2, $3, $4) RETURNING *',
+        [comment, date,user.user_id, id], (err, res) => {
+         if (err) {
+           console.error('Ekleme hatası:', err);
+         } else {
+           console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+         }
+       });
+      }
+    }
+    
+    //// comment okuma
+    if(movieDetails.Type==="movie"){
+      let query = `
+      SELECT Reviews.comment, Users.username, Reviews.date
+      FROM Reviews
+      INNER JOIN Users ON Reviews.user_id = Users.user_id
+      INNER JOIN Movies ON Reviews.movie_id = Movies.movie_id
+      WHERE Movies.movie_id = $1
+    `;
+    
+    db.query(query, [id], (err, res) => {
+      if (err) {
+        console.error(err);
+      }
+      else{
+        commentArray=res.rows;
+        console.log(res.rows);
+        console.log(res.rows.length);
+        console.log("commentssssssssss :"+res.rows[0]);
+      }
+    });
+    }
+    else if(movieDetails.Type==="series"){
+      let query = `
+      SELECT Reviews.comment, Users.username, Reviews.date
+      FROM Reviews
+      INNER JOIN Users ON Reviews.user_id = Users.user_id
+      INNER JOIN Series ON Reviews.series_id = Series.series_id
+      WHERE Series.series_id = $1
+    `;
+    
+    db.query(query, [id], (err, res) => {
+      if (err) {
+        console.error(err);
+      }
+      else{
+        commentArray=res.rows;
+        console.log(res.rows);
+        console.log(res.rows.length);
+        console.log("commentssssssssss :"+res.rows[0]);
+      }
+    });
+    }
+  
+
+await waitOneSec();
+console.log("arrrayyyyyy: "+commentArray);
+
+
     res.render("movie-details.ejs", {
         movieDetails: movieDetails,
-        relatedMoviesDetails: relatedMoviesDetails
+        relatedMoviesDetails: relatedMoviesDetails,
+        commentArray: commentArray
     });
 });
 
