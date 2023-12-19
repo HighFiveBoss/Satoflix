@@ -1,13 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
 import axios from "axios";
-import pg from "pg";
+//import pg from "pg";
+import sqlite3 from 'sqlite3';
 
 const app = express();
 const port = 3000;
 const APIKey0 = 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7';
 const APIKey1 = '74c0434c46msh3a062b2096052f9p171104jsnd24893c2aeb7';
 
+/*
 const db = new pg.Client({
     user: "postgres",
     host: "localhost",
@@ -16,6 +18,16 @@ const db = new pg.Client({
     port: 5432,
   });
 db.connect();  
+*/
+
+let lite = new sqlite3.Database('satoflix.db', sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log('SQLite veritabanına bağlandı. sqlite');
+  }
+});
+
 
 let user;
 let idArray = [];
@@ -172,21 +184,33 @@ app.post('/profile.ejs', async (req, res) => {
   const email = req.body.email;
   const username = req.body.username;
 
+  // user=result.rows[0];
   try {
-    const query = `
-      UPDATE Users 
-      SET username = $1, email = $2
-      WHERE user_id = $3
-      RETURNING *`;
+    const updateQuery = `
+    UPDATE Users 
+    SET username = ?, email = ?
+    WHERE user_id = ?
+  `;
     
-    const values = [username, email, user.user_id]; 
+  lite.run(updateQuery, [username, email, user.user_id], function(err) {
+    if (err) {
+      return console.error(err.message);
+    }
 
-    const result = await db.query(query, values);
-    console.log('Güncellenmiş satır:', result.rows[0]);
-    user=result.rows[0];
-  } catch (err) {
-    console.error('Hata:', err);
-  }
+    const selectQuery = `SELECT * FROM Users WHERE user_id = ?`;
+
+    lite.all(selectQuery, [user.user_id], (err, row) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log('Güncellenmiş satır:', row);
+      user=row[0];
+      // Burada güncellenmiş satır verisini kullanabilirsin
+    });
+  });
+} catch (err) {
+  console.error('Hata:', err);
+}
   
   res.redirect('/index-profile.ejs');
 });
@@ -194,21 +218,23 @@ app.post('/profile.ejs', async (req, res) => {
 app.post('/password.ejs', async (req, res) => {
   const password = req.body.newPassword;
 
-  try {
-    const query = `
-      UPDATE Users 
-      SET password = $1
-      WHERE user_id = $2
-      RETURNING *`;
-    
-    const values = [password, user.user_id]; 
-
-    const result = await db.query(query, values);
-    console.log('Güncellenmiş satır:', result.rows[0]);
-    user=result.rows[0];
-  } catch (err) {
-    console.error('Hata:', err);
+  
+lite.run(`UPDATE Users SET password = ? WHERE user_id = ?`, [password, user.user_id], function(err) {
+  if (err) {
+    console.error('Hata:', err.message);
+  } else {
+    lite.get('SELECT * FROM Users WHERE user_id = ?', [user.user_id], (err, row) => {
+      if (err) {
+        console.error('Hata:', err.message);
+      } else {
+        console.log('Güncellenen satır:', row);
+        user=row;
+      }
+    });
   }
+});
+
+
 
   res.redirect('/index-profile.ejs');
 });
@@ -221,27 +247,27 @@ app.post('/login.ejs', async (req, res) => {
     console.log(email);
     console.log(password);
 
-    db.query(
+    lite.all(
         `SELECT Users.*, Role.*
          FROM Users
          JOIN Role ON Users.role_id = Role.role_id
-         WHERE Users.email = $1 AND Users.password = $2`,
+         WHERE Users.email = ? AND Users.password = ?`,
         [email, password],
         (err, res) => {
         if (err) {
             console.error('Hata:', err);
           } else {
-            console.log('Sonuçlar:', res.rows);
-            user=res.rows[0];
+            //console.log('Sonuçlar:', res.rows);
+            user=res[0];
           }
-        if(res.rows.length>0 && res.rows[0].role_name=="user"){
-            console.log("user : "+res.rows[0].username +" log in");
+        if(res.length>0 && res[0].role_name=="user"){
+            console.log("user : "+res[0].username +" log in");
             //res.redirect('/');
             flag=true;
             console.log("sorgu içi flag: "+flag);
            }
-        else if(res.rows.length>0 && res.rows[0].role_name=="admin"){
-            console.log("admin : "+res.rows[0].username +" log in");
+        else if(res.length>0 && res[0].role_name=="admin"){
+            console.log("admin : "+res[0].username +" log in");
             //res.redirect('/');
             flag=true;
           }
@@ -274,32 +300,35 @@ app.post('/register.ejs', (req, res) => {
     console.log(username);
     console.log(password);
 
-    db.query('INSERT INTO Role(role_name) VALUES($1) RETURNING *',
+    lite.run('INSERT INTO Role(role_name) VALUES(?) RETURNING *',
      ["user"], (err, res) => {
         if (err) {
         console.error('Ekleme hatası:', err);
       } else {
-        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+        console.log('Yeni kullanıcı eklendi:');
+        //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
       }
     });
 
-    db.query('SELECT role_id FROM Role ORDER BY role_id DESC LIMIT 1', (err, res) => {
+    lite.all('SELECT role_id FROM Role ORDER BY role_id DESC LIMIT 1',[], (err, res) => {
         if (err) {
           console.error('Hata:', err);
         } else {
-          console.log('Son eklenen veri:', res.rows[0]);
-          roleid=res.rows[0];
+          //console.log('Son eklenen veri:', res.rows[0]);
+          console.log('Son eklenen veri:', res[0]);
+          roleid=res[0];
           let roleidString = roleid.role_id.toString();
           let roleidINTEGER = parseInt(roleidString);
 
           console.log("sdsadsdadsasad" +typeof roleidINTEGER);
           console.log("aaaaaaaaaaaaaa"+ roleidINTEGER);
-          db.query('INSERT INTO Users(username, email, password, role_id) VALUES($1, $2, $3, $4) RETURNING *',
+          lite.run('INSERT INTO Users(username, email, password, role_id) VALUES(?, ?, ?, ?) RETURNING *',
      [username, email, password, roleidINTEGER], (err, res) => {
       if (err) {
         console.error('Ekleme hatası:', err);
       } else {
-        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+        console.log('Yeni kullanıcı eklendi:');
+        //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
       }
     });
         }
@@ -346,28 +375,20 @@ app.get("/", async (req, res) => {
 */
 
 
-    /* sql insert
-    for(let i=0;i<upcomingMoviesDetails.length;i++){
-        db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime,imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-     [upcomingMoviesDetails[i].imdbID, upcomingMoviesDetails[i].Title, upcomingMoviesDetails[i].Poster, upcomingMoviesDetails[i].Year,
-     upcomingMoviesDetails[i].Runtime, null, upcomingMoviesDetails[i].Plot], (err, res) => {
-        if (err) {
-        console.error('Ekleme hatası:', err);
-      } else {
-        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-      }
-    });
-    }
-    */
-
-    db.query('SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = \'2023\' OR year = \'2024\')', (err, res) => {
-        if (err) {
-          console.error('Hata:', err);
-        } else {
-          console.log('Sonuçlar:', res.rows);
-          upcomingMovies=res.rows;
-        }
+lite.all("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", [], (err, rows) => {
+  if (err) {
+      console.error(err.message);
+  } else {
+    upcomingMovies=rows;
+    console.log("sql lite : sdadsaads "+rows);
+      // Process the retrieved rows
+      rows.forEach(row => {
+          console.log(row); // Display each row
       });
+  }
+});
+
+
       await waitOneSec();
 
         /*
@@ -382,64 +403,37 @@ app.get("/", async (req, res) => {
 
    */
 
-   //console.log(topRatedMoviesDetails);
-  /* sql insert
-   for(let i=0;i<topRatedMoviesDetails.length;i++){
-    db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-     [topRatedMoviesDetails[i].imdbID, topRatedMoviesDetails[i].Title, topRatedMoviesDetails[i].Poster, topRatedMoviesDetails[i].Year, 
-     topRatedMoviesDetails[i].Runtime, topRatedMoviesDetails[i].imdbRating, topRatedMoviesDetails[i].Plot], (err, res) => {
-      if (err) {
-        console.error('Ekleme hatası:', err);
-      } else {
-        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-      }
-    });
-   }
-*/
 
-db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8', (err, res) => {
-    if (err) {
-      console.error('Hata:', err);
-    } else {
-      console.log('Sonuçlar:', res.rows);
-      topRatedMovies=res.rows;     
-    }
-  });
+lite.all("SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8", [], (err, rows) => {
+  if (err) {
+      console.error(err.message);
+  } else {
+    topRatedMovies=rows;
+    console.log("sql lite : sdadsaads "+rows);
+      // Process the retrieved rows
+      rows.forEach(row => {
+          console.log(row); // Display each row
+      });
+  }
+});
+
   await waitOneSec();
 
 
-/*
-    const topRatedSeriesDetails = await Promise.all(
-        topRatedSeriesIds.map(async (topRatedSeriesId) => {
-            const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot} = await getDetails(topRatedSeriesId);
-            return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
-        })
-    );
-    */
 
-    //console.log(topRatedSeriesDetails);
-/* sql insert
-    for(let i=0;i<topRatedSeriesDetails.length;i++){
-        db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-     [topRatedSeriesDetails[i].imdbID, topRatedSeriesDetails[i].Title, topRatedSeriesDetails[i].Poster, topRatedSeriesDetails[i].Year, 
-     topRatedSeriesDetails[i].Runtime, topRatedSeriesDetails[i].imdbRating, topRatedSeriesDetails[i].Plot], (err, res) => {
+    lite.all("SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4", [], (err, rows) => {
       if (err) {
-        console.error('Ekleme hatası:', err);
+          console.error(err.message);
       } else {
-        console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+        topRatedSeries=rows;
+        console.log("sql lite : sdadsaads "+rows);
+          // Process the retrieved rows
+          rows.forEach(row => {
+              console.log(row); // Display each row
+          });
       }
     });
-    }
-  */ 
 
-    db.query('SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4', (err, res) => {
-        if (err) {
-          console.error('Hata:', err);
-        } else {
-          console.log('Sonuçlar:', res.rows);
-          topRatedSeries=res.rows;
-        }
-      });
       await waitOneSec();
     
 
@@ -480,98 +474,49 @@ app.get("/index-profile.ejs", async (req, res) => {
 */
 
 
-  /* sql insert
-  for(let i=0;i<upcomingMoviesDetails.length;i++){
-      db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime,imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-   [upcomingMoviesDetails[i].imdbID, upcomingMoviesDetails[i].Title, upcomingMoviesDetails[i].Poster, upcomingMoviesDetails[i].Year,
-   upcomingMoviesDetails[i].Runtime, null, upcomingMoviesDetails[i].Plot], (err, res) => {
-      if (err) {
-      console.error('Ekleme hatası:', err);
-    } else {
-      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-    }
-  });
-  }
-  */
 
-  db.query('SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = \'2023\' OR year = \'2024\')', (err, res) => {
+    lite.all("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", [], (err, rows) => {
       if (err) {
-        console.error('Hata:', err);
+          console.error(err.message);
       } else {
-        console.log('Sonuçlar:', res.rows);
-        upcomingMovies=res.rows;
+        upcomingMovies=rows;
+        console.log("sql lite : sdadsaads "+rows);
+          // Process the retrieved rows
+          rows.forEach(row => {
+              console.log(row); // Display each row
+          });
       }
     });
     await waitOneSec();
 
-      /*
-  const topRatedMoviesDetails = await Promise.all(
-      topRatedMoviesIds.map(async (topRatedMovieId) => {
-          const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(topRatedMovieId);
-          return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
-      })
-  );
 
- await waitOneSec();
 
- */
-
- //console.log(topRatedMoviesDetails);
-/* sql insert
- for(let i=0;i<topRatedMoviesDetails.length;i++){
-  db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-   [topRatedMoviesDetails[i].imdbID, topRatedMoviesDetails[i].Title, topRatedMoviesDetails[i].Poster, topRatedMoviesDetails[i].Year, 
-   topRatedMoviesDetails[i].Runtime, topRatedMoviesDetails[i].imdbRating, topRatedMoviesDetails[i].Plot], (err, res) => {
-    if (err) {
-      console.error('Ekleme hatası:', err);
-    } else {
-      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-    }
-  });
- }
-*/
-
-db.query('SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8', (err, res) => {
+lite.all("SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8", [], (err, rows) => {
   if (err) {
-    console.error('Hata:', err);
+      console.error(err.message);
   } else {
-    console.log('Sonuçlar:', res.rows);
-    topRatedMovies=res.rows;     
+    topRatedMovies=rows;
+    console.log("sql lite : sdadsaads "+rows);
+      // Process the retrieved rows
+      rows.forEach(row => {
+          console.log(row); // Display each row
+      });
   }
 });
 await waitOneSec();
 
 
-/*
-  const topRatedSeriesDetails = await Promise.all(
-      topRatedSeriesIds.map(async (topRatedSeriesId) => {
-          const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot} = await getDetails(topRatedSeriesId);
-          return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
-      })
-  );
-  */
 
-  //console.log(topRatedSeriesDetails);
-/* sql insert
-  for(let i=0;i<topRatedSeriesDetails.length;i++){
-      db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-   [topRatedSeriesDetails[i].imdbID, topRatedSeriesDetails[i].Title, topRatedSeriesDetails[i].Poster, topRatedSeriesDetails[i].Year, 
-   topRatedSeriesDetails[i].Runtime, topRatedSeriesDetails[i].imdbRating, topRatedSeriesDetails[i].Plot], (err, res) => {
-    if (err) {
-      console.error('Ekleme hatası:', err);
-    } else {
-      console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-    }
-  });
-  }
-*/ 
-
-  db.query('SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4', (err, res) => {
+    lite.all("SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4", [], (err, rows) => {
       if (err) {
-        console.error('Hata:', err);
+          console.error(err.message);
       } else {
-        console.log('Sonuçlar:', res.rows);
-        topRatedSeries=res.rows;
+        topRatedSeries=rows;
+        console.log("sql lite : sdadsaads "+rows);
+          // Process the retrieved rows
+          rows.forEach(row => {
+              console.log(row); // Display each row
+          });
       }
     });
     await waitOneSec();
@@ -614,13 +559,14 @@ app.post("/movie-details.ejs", async (req, res) => {
             if(relatedMoviesDetails[i].imdbRating=='N/A'){
               relatedMoviesDetails[i].imdbRating=null;
             }          
-            db.query('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (series_id) DO NOTHING RETURNING *',
+            lite.run('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot) VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT (series_id) DO NOTHING RETURNING *',
          [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
          relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
           if (err) {
             console.error('Ekleme hatası:', err);
           } else {
-            console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+            console.log('Yeni kullanıcı eklendi:');
+            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
           }
         });
         }
@@ -630,13 +576,14 @@ app.post("/movie-details.ejs", async (req, res) => {
           if(relatedMoviesDetails[i].imdbRating=='N/A'){
             relatedMoviesDetails[i].imdbRating=null;
           } 
-            db.query('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
+            lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot) VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
          [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year, 
          relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot], (err, res) => {
           if (err) {
             console.error('Ekleme hatası:', err);
           } else {
-            console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+            console.log('Yeni kullanıcı eklendi:');
+            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
           }
         });
         }
@@ -657,21 +604,21 @@ app.post("/movie-details.ejs", async (req, res) => {
       console.log("comment : "+comment);
       console.log("username : "+username);
       if(typeof comment !== 'undefined' && movieDetails.Type==="movie"){
-        db.query('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES($1, $2, $3, $4) RETURNING *',
+        lite.run('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES(?, ?, ?, ?) RETURNING *',
         [comment, date,user.user_id, id], (err, res) => {
          if (err) {
            console.error('Ekleme hatası:', err);
          } else {
-           console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+           console.log('Yeni kullanıcı eklendi:');
          }
        });
       } else if(typeof comment !== 'undefined' && movieDetails.Type==="series"){
-        db.query('INSERT INTO Reviews(comment, date, user_id, series_id) VALUES($1, $2, $3, $4) RETURNING *',
+        lite.run('INSERT INTO Reviews(comment, date, user_id, series_id) VALUES(?, ?, ?, ?) RETURNING *',
         [comment, date,user.user_id, id], (err, res) => {
          if (err) {
            console.error('Ekleme hatası:', err);
          } else {
-           console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+           console.log('Yeni kullanıcı eklendi:');
          }
        });
       }
@@ -684,18 +631,15 @@ app.post("/movie-details.ejs", async (req, res) => {
       FROM Reviews
       INNER JOIN Users ON Reviews.user_id = Users.user_id
       INNER JOIN Movies ON Reviews.movie_id = Movies.movie_id
-      WHERE Movies.movie_id = $1
+      WHERE Movies.movie_id = ?
     `;
     
-    db.query(query, [id], (err, res) => {
+    lite.all(query, [id], (err, res) => {
       if (err) {
         console.error(err);
       }
       else{
-        commentArray=res.rows;
-        console.log(res.rows);
-        console.log(res.rows.length);
-        console.log("commentssssssssss :"+res.rows[0]);
+        commentArray=res;
       }
     });
     }
@@ -705,18 +649,15 @@ app.post("/movie-details.ejs", async (req, res) => {
       FROM Reviews
       INNER JOIN Users ON Reviews.user_id = Users.user_id
       INNER JOIN Series ON Reviews.series_id = Series.series_id
-      WHERE Series.series_id = $1
+      WHERE Series.series_id = ?
     `;
     
-    db.query(query, [id], (err, res) => {
+    lite.all(query, [id], (err, res) => {
       if (err) {
         console.error(err);
       }
       else{
-        commentArray=res.rows;
-        console.log(res.rows);
-        console.log(res.rows.length);
-        console.log("commentssssssssss :"+res.rows[0]);
+        commentArray=res;
       }
     });
     }
