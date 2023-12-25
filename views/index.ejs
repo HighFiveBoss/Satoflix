@@ -56,13 +56,25 @@
             <option value="tr">TR</option>
           </select>
         </div>
-
-        <button id="btn btn-primary">Log in</button>
-        <script>
-          document.getElementById('btn btn-primary').addEventListener('click', function() {
-            window.location.href = '/login.ejs';
-          });
-        </script>
+        <% if (!login) {%>
+          <button id="btn btn-primary" class="btn btn-primary">Log In</button>
+          <script>
+            document.getElementById('btn btn-primary').addEventListener('click', function () {
+              window.location.href = '/login.ejs';
+            });
+          </script>
+          <% } else { %>
+            <button id="profileButton" class="btn btn-primary">Profile</button>
+            <button id="favoriteButton" class="btn btn-primary"><ion-icon name="heart-outline"></ion-icon></button>
+            <script>
+              document.getElementById('profileButton').addEventListener('click', function () {
+                window.location.href = '/profile.ejs';
+              });
+              document.getElementById('favoriteButton').addEventListener('click', function () {
+                window.location.href = '/favorites.ejs';
+              });
+            </script>
+            <% } %>
       </div>
 
       <button class="menu-open-btn" data-menu-open-btn>
@@ -246,32 +258,38 @@
           </div>
 
           <ul class="movies-list has-scrollbar">
-            <% upcomingMovies.forEach((movie, index) => { %>
+            <% upcomingMovies.forEach((movie, index)=> { %>
               <li>
                 <div class="movie-card">
                   <form id="upcomingMovieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
                     <input type="hidden" name="movieName" value="<%= movie.title %>">
                     <input type="hidden" name="movieId" value="<%= movie.movie_id %>">
                   </form>
-          
-                  <a href="./movie-details.ejs" onclick="document.getElementById('upcomingMovieDetailsForm<%= index %>').submit(); return false">
+
+                  <a href="./movie-details.ejs"
+                    onclick="document.getElementById('upcomingMovieDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
                       <img src="<%= movie.poster %>" alt="<%= movie.title %> movie poster">
                     </figure>
                   </a>
-          
+
                   <div class="title-wrapper">
-                    <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= movie.title %></h3>
+                    <a href="./movie-details.ejs"
+                      onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
+                      <h3 class="card-title">
+                        <%= movie.title %>
+                      </h3>
                     </a>
-          
-                    <time datetime="<%= movie.year %>"><%= movie.year %></time>
+
+                    <time datetime="<%= movie.year %>">
+                      <%= movie.year %>
+                    </time>
                   </div>
                 </div>
               </li>
-            <% }); %>
+              <% }); %>
           </ul>
-          
+
 
         </div>
       </section>
@@ -392,48 +410,58 @@
           </ul>
 
           <ul class="movies-list">
-            <% topRatedMovies.forEach((movie, index) => { %>
+            <% topRatedMovies.forEach((movie, index)=> { %>
               <li>
                 <div class="movie-card">
-          
+
                   <form id="movieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
                     <input type="hidden" name="movieName" value="<%= movie.title %>">
                     <input type="hidden" name="movieId" value="<%= movie.movie_id %>">
                   </form>
-          
-                  <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
+
+                  <a href="./movie-details.ejs"
+                    onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
                       <img src="<%= movie.poster %>" alt="<%= movie.title %> movie poster">
                     </figure>
                   </a>
-          
+
                   <div class="title-wrapper">
-                    <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= movie.title %></h3>
+                    <a href="./movie-details.ejs"
+                      onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
+                      <h3 class="card-title">
+                        <%= movie.title %>
+                      </h3>
                     </a>
-          
-                    <time datetime="<%= movie.year %>"><%= movie.year %></time>
+
+                    <time datetime="<%= movie.year %>">
+                      <%= movie.year %>
+                    </time>
                   </div>
-          
+
                   <div class="card-meta">
                     <div class="badge badge-outline">2K</div>
-          
+
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= movie.runtime.slice(0, -4) %>M"><%= movie.runtime.slice(0, -4) %></time>
+                      <time datetime="PT<%= movie.runtime.slice(0, -4) %>M">
+                        <%= movie.runtime.slice(0, -4) %>
+                      </time>
                     </div>
-          
+
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= movie.imdb_rating %></data>
+                      <data>
+                        <%= movie.imdb_rating %>
+                      </data>
                     </div>
                   </div>
-          
+
                 </div>
               </li>
-            <% }); %>
+              <% }); %>
           </ul>
-          
+
 
         </div>
       </section>
@@ -454,48 +482,58 @@
           <h2 class="h2 section-title">World Best TV Series</h2>
 
           <ul class="movies-list">
-            <% topRatedSeries.forEach((series, index) => { %>
+            <% topRatedSeries.forEach((series, index)=> { %>
               <li>
                 <div class="movie-card">
-          
+
                   <form id="seriesDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
                     <input type="hidden" name="movieName" value="<%= series.title %>">
                     <input type="hidden" name="movieId" value="<%= series.series_id %>">
                   </form>
-          
-                  <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+
+                  <a href="./movie-details.ejs"
+                    onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
                       <img src="<%= series.poster %>" alt="<%= series.title %> movie poster">
                     </figure>
                   </a>
-          
+
                   <div class="title-wrapper">
-                    <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= series.title %></h3>
+                    <a href="./movie-details.ejs"
+                      onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+                      <h3 class="card-title">
+                        <%= series.title %>
+                      </h3>
                     </a>
-          
-                    <time datetime="<%= series.year %>"><%= series.year %></time>
+
+                    <time datetime="<%= series.year %>">
+                      <%= series.year %>
+                    </time>
                   </div>
-          
+
                   <div class="card-meta">
                     <div class="badge badge-outline">2K</div>
-          
+
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= series.runtime.slice(0, -4) %>M"><%= series.runtime.slice(0, -4) %></time>
+                      <time datetime="PT<%= series.runtime.slice(0, -4) %>M">
+                        <%= series.runtime.slice(0, -4) %>
+                      </time>
                     </div>
-          
+
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= series.imdb_rating %></data>
+                      <data>
+                        <%= series.imdb_rating %>
+                      </data>
                     </div>
                   </div>
-          
+
                 </div>
               </li>
-            <% }); %>
+              <% }); %>
           </ul>
-          
+
 
         </div>
       </section>

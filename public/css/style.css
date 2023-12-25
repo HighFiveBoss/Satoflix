@@ -392,6 +392,7 @@ body.active { overflow: hidden; }
   padding-block: 25px;
   transition: var(--transition-2);
   z-index: 4;
+  background-color: RGB(34, 41, 53, 0.99);
 }
 
 .header.active {
@@ -1014,19 +1015,26 @@ body.active { overflow: hidden; }
   margin-bottom: 30px;
 }
 
-.details-actions .share ion-icon {
+/* Common styles for both share and heart */
+.details-actions .share ion-icon,
+.details-actions .heart ion-icon {
   font-size: 25px;
   color: var(--white);
   margin-inline: auto;
 }
 
-.details-actions .share span {
+.details-actions .share span,
+.details-actions .heart span {
   color: var(--gainsboro);
   font-size: var(--fs-11);
   transition: var(--transition-1);
 }
 
-.details-actions .share:is(:hover, :focus) span { color: var(--red); }
+.details-actions .share:is(:hover, :focus) span,
+.details-actions .heart:is(:hover, :focus) span {
+  color: var(--red);
+}
+
 
 .details-actions .title {
   color: var(--white);
