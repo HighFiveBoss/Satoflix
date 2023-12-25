@@ -57,12 +57,25 @@
           </select>
         </div>
 
-        <button id="btn btn-primary">Log in</button>
-        <script>
-          document.getElementById('btn btn-primary').addEventListener('click', function() {
-            window.location.href = '/login.ejs';
-          });
-        </script>
+        <% if (!login) {%>
+          <button id="btn btn-primary" class="btn btn-primary">Log In</button>
+          <script>
+            document.getElementById('btn btn-primary').addEventListener('click', function () {
+              window.location.href = '/login.ejs';
+            });
+          </script>
+          <% } else { %>
+            <button id="profileButton" class="btn btn-primary">Profile</button>
+            <button id="favoriteButton" class="btn btn-primary"><ion-icon name="heart-outline"></ion-icon></button>
+            <script>
+              document.getElementById('profileButton').addEventListener('click', function () {
+                window.location.href = '/profile.ejs';
+              });
+              document.getElementById('favoriteButton').addEventListener('click', function () {
+                window.location.href = '/favorites.ejs';
+              });
+            </script>
+            <% } %>
 
       </div>
 
@@ -217,11 +230,21 @@
             <p class="storyline"><%= movieDetails.Plot  %></p>
 
             <div class="details-actions">
-
+            
               <button class="share">
                 <ion-icon name="share-social"></ion-icon>
-
+            
                 <span>Share</span>
+              </button>
+
+
+              <form id="addFavorite" action="" method="post">
+                <input type="hidden" name="favMovieId" value="<%= movieDetails.imdbID %>">
+              </form>
+              <button id="favoriteButton" class="heart" type="submit" onclick="document.getElementById('addFavorite').submit(); return false">
+                <ion-icon name="heart-outline"></ion-icon>
+            
+                <span>Favorite</span>
               </button>
 
               <div class="title-wrapper">
@@ -253,7 +276,7 @@
 
       <div class="comment-session">
         <div class="post-comment"> 
-         <% commentArray.forEach((comments) => { %>
+          <% commentArray.forEach((comments) => { %>
             <div class="list">
                 <div class="user">
                     <div class="user-meta"> 

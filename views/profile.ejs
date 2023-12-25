@@ -1,45 +1,57 @@
 <!DOCTYPE html>
-   <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
 
-      <!--=============== REMIXICONS ===============-->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      <!--=============== CSS ===============-->
-      <link rel="stylesheet" href="css/login-style.css">
+   <!--=============== REMIXICONS ===============-->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
 
-      <title>General Info Satoflix</title>
-   </head>
-   <body>
-      <div class="login">
-         <img src="images/satoflix_login.png" alt="image" class="login__bg">
+   <!--=============== CSS ===============-->
+   <link rel="stylesheet" href="css/login-style.css">
 
-         <form action="" class="login__form" method="POST">
+   <title>General Info Satoflix</title>
+</head>
+
+<body>
+   <div class="login">
+      <img src="images/satoflix_login.png" alt="image" class="login__bg">
+
+      <div class="login__form">
+         <form id="updateForm" action="" method="POST">
+            <input type="hidden" name="form_id" value="updateForm">
             <h1 class="login__title">General Info</h1>
 
             <div class="login__inputs">
                <div class="login__box">
-                  <input type="email" placeholder="Email ID" name="email" required class="login__input" value="<%= email %>">
+                  <input type="email" placeholder="Email ID" name="email" required class="login__input"
+                     value="<%= email %>">
                   <i class="ri-mail-fill"></i>
                </div>
 
                <div class="login__box">
-                  <input type="text" placeholder="Username" name="username" required class="login__input" value="<%= username %>">
+                  <input type="text" placeholder="Username" name="username" required class="login__input"
+                     value="<%= username %>">
                   <i class="ri-user-fill"></i>
                </div>
             </div>
 
             <button type="submit" class="login__button">Update</button>
+         </form>
 
+         <div class="login__register">
+            <a href="password.ejs">Change Password</a>
+         </div>
+
+         <form id="logOutButton" action="" method="post">
+            <input type="hidden" name="form_id" value="logOutButton">
             <div class="login__register">
-                <a href="password.ejs">Change Password</a>
-            </div>
-            <div class="login__register">
-                <a href="/">Sign out</a>
+               <button type="submit">Sign out</button>
             </div>
          </form>
       </div>
-   </body>
+   </div>
+</body>
+
 </html>
