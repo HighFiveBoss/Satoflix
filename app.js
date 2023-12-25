@@ -361,7 +361,8 @@ app.get("/favorites.ejs", (req, res) => {
       } else {
         rows.forEach(row => favorites.push(row));
         res.render('favorites.ejs', {
-          favorites: favorites
+          favorites: favorites,
+          login: login
         });
       }
     }
@@ -524,7 +525,6 @@ app.post("/movie-details.ejs", async (req, res) => {
     let comment = req.body.comment;
     let username = user.username;
     const favMovId = req.body.favMovieId;
-    console.log(favMovId);
 
     if (typeof comment !== 'undefined' && movieDetails.Type === "movie") {
       lite.run('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES(?, ?, ?, ?) RETURNING *',
@@ -615,6 +615,7 @@ app.post("/movie-details.ejs", async (req, res) => {
 
 
   res.render("movie-details.ejs", {
+    login: login,
     movieDetails: movieDetails,
     relatedMoviesDetails: relatedMoviesDetails,
     commentArray: commentArray
