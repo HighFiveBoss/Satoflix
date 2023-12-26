@@ -658,7 +658,6 @@ app.post("/movie-details.ejs", async (req, res) => {
       }
     });
     }
-    
     else{
       lite.serialize(async () => {
         for(let i=0;i<relatedMoviesDetails.length;i++){
