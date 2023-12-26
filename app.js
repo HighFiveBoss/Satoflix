@@ -152,6 +152,28 @@ async function getMoreLikeThis(id, limit = 10) {
   }
 }
 
+async function getMovieByName(name) {
+  const options = {
+    method: 'GET',
+    url: 'https://movie-database-alternative.p.rapidapi.com/',
+    params: {
+      s: name,
+      r: 'json'
+    },
+    headers: {
+      'X-RapidAPI-Key': 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7',
+      'X-RapidAPI-Host': 'movie-database-alternative.p.rapidapi.com'
+    }
+  };
+  
+  try {
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 app.get("/login.ejs", (req, res) => {
   res.render("login.ejs");
 });
@@ -211,6 +233,25 @@ res.render("movies.ejs", {
 });
 });
 
+app.post('/search', async (req, res) => {
+  const search = req.body.searchQuery;
+  const resultList = await getMovieByName(search);
+  if(resultList.Response === 'False'){
+    res.render("search.ejs", {
+      login: login,
+      search: search,
+      searchItems: [],
+      response: false
+    });
+  } else {
+    res.render("search.ejs", {
+      login: login,
+      search: search,
+      searchItems: resultList.Search,
+      response: true
+    });
+  }
+});
 
 app.get("/series.ejs", async (req, res) => {
   let seriesgenres;

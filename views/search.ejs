@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorites</title>
+    <title>
+        <%= search %>
+    </title>
 
     <!-- 
     - favicon
@@ -176,61 +178,48 @@
             <section class="tv-series">
                 <div class="container">
 
-                    <h2 class="h2 section-title">Favorite Movies</h2>
+                    <h2 class="h2 section-title">
+                        <%= search %>
+                    </h2>
 
+                    <% if (response) {%>
                     <ul class="movies-list">
-                        <% favorites.forEach((favorite, index)=> { %>
+                        <% searchItems.forEach((item, index)=> { %>
                             <li>
                                 <div class="movie-card">
 
-                                    <form id="favoriteDetailsForm<%= index %>" action="./movie-details.ejs"
-                                        method="post">
-                                        <input type="hidden" name="movieName" value="<%= favorite.title %>">
-                                        <input type="hidden" name="movieId" value="<%= favorite.movie_id %>">
+                                    <form id="itemDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
+                                        <input type="hidden" name="movieName" value="<%= item.Title %>">
+                                        <input type="hidden" name="movieId" value="<%= item.imdbID %>">
                                     </form>
 
                                     <a href="./movie-details.ejs"
                                         onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
                                         <figure class="card-banner">
-                                            <img src="<%= favorite.poster %>" alt="<%= favorite.title %> movie poster">
+                                            <img src="<%= item.Poster %>" alt="<%= item.Title %> movie poster">
                                         </figure>
                                     </a>
 
                                     <div class="title-wrapper">
                                         <a href="./movie-details.ejs"
-                                            onclick="document.getElementById('favoriteDetailsForm<%= index %>').submit(); return false">
+                                            onclick="document.getElementById('itemDetailsForm<%= index %>').submit(); return false">
                                             <h3 class="card-title">
-                                                <%= favorite.title %>
+                                                <%= item.Title %>
                                             </h3>
                                         </a>
-
-                                        <time datetime="<%= favorite.year %>">
-                                            <%= favorite.year %>
-                                        </time>
                                     </div>
 
                                     <div class="card-meta">
                                         <div class="badge badge-outline">2K</div>
-
-                                        <div class="duration">
-                                            <ion-icon name="time-outline"></ion-icon>
-                                            <time datetime="PT<%= favorite.runtime.slice(0, -4) %>M">
-                                                <%= favorite.runtime.slice(0, -4) %>
-                                            </time>
-                                        </div>
-
-                                        <div class="rating">
-                                            <ion-icon name="star"></ion-icon>
-                                            <data>
-                                                <%= favorite.imdb_rating %>
-                                            </data>
-                                        </div>
                                     </div>
 
                                 </div>
                             </li>
                             <% }); %>
                     </ul>
+                    <% } else { %>
+                        <h2 style="color: white;">Opps. We couldn't find any movie or series named <%= search %></h2>
+                    <% } %>
 
                 </div>
             </section>

@@ -51,3 +51,57 @@ window.addEventListener("scroll", function () {
 
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+  const searchResults = document.getElementById('searchResults');
+  const searchInput = document.getElementById('searchInput');
+
+  // Hide search results and set initial width and visibility
+  searchResults.style.display = 'none';
+  searchInput.style.width = '0';
+  searchInput.style.visibility = 'hidden';
+  searchInput.style.pointerEvents = 'none'; // Disable pointer events initially
+
+  document.addEventListener('click', function (event) {
+    const searchContainer = document.querySelector('.search-container');
+
+    // Check if the clicked element is outside the search container
+    if (!searchContainer.contains(event.target)) {
+      searchResults.style.display = 'none';
+      searchInput.style.width = '0';
+      searchInput.style.visibility = 'hidden';
+      searchInput.style.pointerEvents = 'none'; // Disable pointer events when hidden
+    }
+  });
+
+  document.querySelector('.search-btn').addEventListener('click', function (event) {
+    // Prevent the click event from propagating to the document
+    event.stopPropagation();
+
+    // Toggle the display and width of the search results
+    if (searchResults.style.display === 'none') {
+      searchResults.style.display = 'block';
+      searchInput.style.width = '200px';
+      searchInput.style.visibility = 'visible';
+      searchInput.style.pointerEvents = 'auto'; // Enable pointer events when visible
+      searchInput.focus(); // Optional: automatically focus on the input field
+    } else {
+      searchResults.style.display = 'none';
+      searchInput.style.width = '0';
+      searchInput.style.visibility = 'hidden';
+      searchInput.style.pointerEvents = 'none'; // Disable pointer events when hidden
+    }
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const searchInput = document.getElementById('searchInput');
+  const searchForm = document.getElementById('searchForm');
+
+  searchInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      searchForm.submit();
+    }
+  });
+});
