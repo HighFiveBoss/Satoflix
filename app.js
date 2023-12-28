@@ -174,6 +174,25 @@ async function getMovieByName(name) {
   }
 }
 
+async function getMoreDetails(id) {
+  const options = {
+    method: 'GET',
+    url: 'https://mdblist.p.rapidapi.com/',
+    params: {i: id},
+    headers: {
+      'X-RapidAPI-Key': APIKey0,
+      'X-RapidAPI-Host': 'mdblist.p.rapidapi.com'
+    }
+  };
+  
+  try {
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 const getAll = (query, variables) => {
   return new Promise((resolve, reject) => {
     lite.all(query, variables, (err, rows) => {
@@ -584,8 +603,10 @@ app.post("/movie-details.ejs", async (req, res) => {
   const id = req.body["movieId"];
   let isFavMovie = false;
   let inWatchlist = false;
-  let movieDetails = await getDetails(id);
-  let relatedMoviesIds = await getMoreLikeThis(id, 4);
+  const movieDetails = await getDetails(id);
+  const relatedMoviesIds = await getMoreLikeThis(id, 4);
+  const moreDetails = await getMoreDetails(id);
+
 
   let relatedMoviesDetails = await Promise.all(
     relatedMoviesIds.map(async (relatedMoviesId) => {
@@ -983,6 +1004,7 @@ app.post("/movie-details.ejs", async (req, res) => {
       });
     });
   }
+  console.log(moreDetails.trailer.slice(28));
 
   res.render("movie-details.ejs", {
     login: login,
@@ -991,7 +1013,8 @@ app.post("/movie-details.ejs", async (req, res) => {
     movieDetails: movieDetails,
     relatedMoviesDetails: relatedMoviesDetails,
     commentArray: commentArray,
-
+    background: moreDetails.backdrop,
+    trailer: moreDetails.trailer.slice(28)
   });
 });
 

@@ -89,7 +89,7 @@
               });
               document.getElementById('watchlistButton').addEventListener('click', function () {
                 window.location.href = '/watchlist.ejs';
-            });
+              });
             </script>
             <% } %>
 
@@ -183,14 +183,21 @@
         - #MOVIE DETAIL
       -->
 
-      <section class="movie-detail">
+      <section class="movie-detail" style="background: url(<%=background%>) no-repeat;">
         <div class="container">
 
           <figure class="movie-detail-banner">
+            
+            <div id="youtubeModal" onclick="closeYouTubePlayer()" style="display: none;">
+              <div id="modalContent">
+                  <div id="player"></div>
+                  <button onclick="closeYouTubePlayer()">Close Player</button>
+              </div>
+          </div>
 
             <img src="<%= movieDetails.Poster %>" alt="<%= movieDetails.Title %> movie poster">
 
-            <button class="play-btn">
+            <button class="play-btn" onclick="openYouTubePlayer('<%=trailer%>')">
               <ion-icon name="play-circle-outline"></ion-icon>
             </button>
 
@@ -264,36 +271,36 @@
                 <input type="hidden" name="movieId" value="<%= movieDetails.imdbID %>">
                 <input type="hidden" name="favMovieId" value="<%= movieDetails.imdbID %>">
                 <% if(!login) { %>
-                <button id="favoriteButton" class="heart" type="button">
-                <% } else { %>
-                <button id="favoriteButton" class="heart" type="submit">
-                <% } %>
-                  <% if(!isFavorite) { %>
-                  <ion-icon name="heart-outline"></ion-icon>
-                  <% } else { %>
-                    <ion-icon name="heart"></ion-icon>
-                  <% } %>
+                  <button id="favoriteButton" class="heart" type="button">
+                    <% } else { %>
+                      <button id="favoriteButton" class="heart" type="submit">
+                        <% } %>
+                          <% if(!isFavorite) { %>
+                            <ion-icon name="heart-outline"></ion-icon>
+                            <% } else { %>
+                              <ion-icon name="heart"></ion-icon>
+                              <% } %>
 
-                  <span>Favorite</span>
-                </button>
+                                <span>Favorite</span>
+                      </button>
               </form>
 
               <form id="addWatchlist" action="" method="post">
                 <input type="hidden" name="movieId" value="<%= movieDetails.imdbID %>">
                 <input type="hidden" name="watchlistMovieId" value="<%= movieDetails.imdbID %>">
                 <% if(!login) { %>
-                <button id="watchlistButton" class="add" type="button">
-                <% } else { %>
-                <button id="watchlistButton" class="add" type="submit">
-                <% } %>
-                  <% if(!inWatchlist) { %>
-                    <ion-icon name="add-circle-outline"></ion-icon>
-                  <% } else { %>
-                    <ion-icon name="add-circle"></ion-icon>
-                  <% } %>
+                  <button id="watchlistButton" class="add" type="button">
+                    <% } else { %>
+                      <button id="watchlistButton" class="add" type="submit">
+                        <% } %>
+                          <% if(!inWatchlist) { %>
+                            <ion-icon name="add-circle-outline"></ion-icon>
+                            <% } else { %>
+                              <ion-icon name="add-circle"></ion-icon>
+                              <% } %>
 
-                  <span>Add Watchlist</span>
-                </button>
+                                <span>Add Watchlist</span>
+                      </button>
               </form>
               <div class="title-wrapper">
                 <p class="title">Prime Video</p>
