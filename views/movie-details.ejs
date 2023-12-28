@@ -5,7 +5,9 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= movieDetails.Title %></title>
+  <title>
+    <%= movieDetails.Title %>
+  </title>
 
   <!-- 
     - favicon
@@ -192,24 +194,28 @@
 
 
             <h1 class="h1 detail-title">
-              <strong><%= movieDetails.Title %></strong>
+              <strong>
+                <%= movieDetails.Title %>
+              </strong>
             </h1>
 
             <div class="meta-wrapper">
 
               <div class="badge-wrapper">
-                <div class="badge badge-fill"><% if(movieDetails.imdbRating) { %>
-                <%= movieDetails.imdbRating %>
-                <% } %>
+                <div class="badge badge-fill">
+                  <% if(movieDetails.imdbRating) { %>
+                    <%= movieDetails.imdbRating %>
+                      <% } %>
                 </div>
 
                 <div class="badge badge-outline">2K</div>
               </div>
 
               <div class="ganre-wrapper">
-                <a href="#"><% if(movieDetails.Genre) { %>
-                  <%= movieDetails.Genre  %>
-                  <% } %>
+                <a href="#">
+                  <% if(movieDetails.Genre) { %>
+                    <%= movieDetails.Genre %>
+                      <% } %>
                 </a>
               </div>
 
@@ -218,39 +224,71 @@
                 <div>
                   <ion-icon name="calendar-outline"></ion-icon>
 
-                  <time><%= movieDetails.Year  %></time>
+                  <time>
+                    <%= movieDetails.Year %>
+                  </time>
                 </div>
 
                 <div>
                   <ion-icon name="time-outline"></ion-icon>
 
-                  <time><%= movieDetails.Runtime.slice(0, -4)  %></time>
+                  <time>
+                    <%= movieDetails.Runtime.slice(0, -4) %>
+                  </time>
                 </div>
 
               </div>
 
             </div>
 
-            <p class="storyline"><%= movieDetails.Plot  %></p>
+            <p class="storyline">
+              <%= movieDetails.Plot %>
+            </p>
 
             <div class="details-actions">
-            
+
               <button class="share">
                 <ion-icon name="share-social"></ion-icon>
-            
+
                 <span>Share</span>
               </button>
 
 
               <form id="addFavorite" action="" method="post">
+                <input type="hidden" name="movieId" value="<%= movieDetails.imdbID %>">
                 <input type="hidden" name="favMovieId" value="<%= movieDetails.imdbID %>">
-              </form>
-              <button id="favoriteButton" class="heart" type="submit" onclick="document.getElementById('addFavorite').submit(); return false">
-                <ion-icon name="heart-outline"></ion-icon>
-            
-                <span>Favorite</span>
-              </button>
+                <% if(!login) { %>
+                <button id="favoriteButton" class="heart" type="button">
+                <% } else { %>
+                <button id="favoriteButton" class="heart" type="submit">
+                <% } %>
+                  <% if(!isFavorite) { %>
+                  <ion-icon name="heart-outline"></ion-icon>
+                  <% } else { %>
+                    <ion-icon name="heart"></ion-icon>
+                  <% } %>
 
+                  <span>Favorite</span>
+                </button>
+              </form>
+
+              <form id="addWatchlist" action="" method="post">
+                <input type="hidden" name="movieId" value="<%= movieDetails.imdbID %>">
+                <input type="hidden" name="watchlistMovieId" value="<%= movieDetails.imdbID %>">
+                <% if(!login) { %>
+                <button id="watchlistButton" class="add" type="button">
+                <% } else { %>
+                <button id="watchlistButton" class="add" type="submit">
+                <% } %>
+                  <% if(!inWatchlist) { %>
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                  <% } else { %>
+                    <ion-icon name="add-circle"></ion-icon>
+                  <% } %>
+
+                  <span>Add Watchlist</span>
+                </button>
+              </form>
               <div class="title-wrapper">
                 <p class="title">Prime Video</p>
 
@@ -279,29 +317,36 @@
 
 
       <div class="comment-session">
-        <div class="post-comment"> 
-          <% commentArray.forEach((comments) => { %>
+        <div class="post-comment">
+          <% commentArray.forEach((comments)=> { %>
             <div class="list">
-                <div class="user">
-                    <div class="user-meta"> 
-                        <div class="name"> <%= comments.username %></div>
-                        <div class="day"> <%= comments.date %> </div>
-                    </div>
+              <div class="user">
+                <div class="user-meta">
+                  <div class="name">
+                    <%= comments.username %>
+                  </div>
+                  <div class="day">
+                    <%= comments.date %>
+                  </div>
                 </div>
-                <div class="comment-post"> <%= comments.comment %> </div>
+              </div>
+              <div class="comment-post">
+                <%= comments.comment %>
+              </div>
             </div>
-          <%  }); %>
-        </div>    
-        <div class="comment-box">
-            <div class="user">
-                <div class="name"></div>
-            </div>
-            <form action="" method="POST">
-                <textarea name="comment" placeholder="Your Comment"></textarea>
-                <button type="submit" class="comment-submit">Comment</button>
-            </form>
+            <% }); %>
         </div>
-    </div>    
+        <div class="comment-box">
+          <div class="user">
+            <div class="name"></div>
+          </div>
+          <form action="" method="POST">
+            <input type="hidden" name="movieId" value="<%= movieDetails.imdbID %>">
+            <textarea name="comment" placeholder="Your Comment"></textarea>
+            <button type="submit" class="comment-submit">Comment</button>
+          </form>
+        </div>
+      </div>
 
       <!-- 
         - #TV SERIES
@@ -313,46 +358,56 @@
           <h2 class="h2 section-title">Related Movies</h2>
 
           <ul class="movies-list">
-            <% relatedMoviesDetails.forEach((series, index) => { %>
+            <% relatedMoviesDetails.forEach((series, index)=> { %>
               <li>
                 <div class="movie-card">
-          
+
                   <form id="seriesDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
                     <input type="hidden" name="movieName" value="<%= series.Title %>">
                     <input type="hidden" name="movieId" value="<%= series.imdbID %>">
                   </form>
-          
-                  <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+
+                  <a href="./movie-details.ejs"
+                    onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
                     <figure class="card-banner">
                       <img src="<%= series.Poster %>" alt="<%= series.Title %> movie poster">
                     </figure>
                   </a>
-          
+
                   <div class="title-wrapper">
-                    <a href="./movie-details.ejs" onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= series.Title %></h3>
+                    <a href="./movie-details.ejs"
+                      onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+                      <h3 class="card-title">
+                        <%= series.Title %>
+                      </h3>
                     </a>
-          
-                    <time datetime="<%= series.Year %>"><%= series.Year %></time>
+
+                    <time datetime="<%= series.Year %>">
+                      <%= series.Year %>
+                    </time>
                   </div>
-          
+
                   <div class="card-meta">
                     <div class="badge badge-outline">2K</div>
-          
+
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= series.Runtime.slice(0, -4) %>M"><%= series.Runtime.slice(0, -4) %></time>
+                      <time datetime="PT<%= series.Runtime.slice(0, -4) %>M">
+                        <%= series.Runtime.slice(0, -4) %>
+                      </time>
                     </div>
-          
+
                     <div class="rating">
                       <ion-icon name="star"></ion-icon>
-                      <data><%= series.imdbRating %></data>
+                      <data>
+                        <%= series.imdbRating %>
+                      </data>
                     </div>
                   </div>
-          
+
                 </div>
               </li>
-            <% }); %>
+              <% }); %>
           </ul>
 
         </div>

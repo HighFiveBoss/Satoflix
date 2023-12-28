@@ -7,7 +7,7 @@ import sqlite3 from 'sqlite3';
 const app = express();
 const port = 3000;
 const APIKey0 = 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7';
-const APIKey1 = '74c0434c46msh3a062b2096052f9p171104jsnd24893c2aeb7';
+const APIKey1 = '42c5decb58msh74886a334bd2607p10ef77jsna37889a6a2ce';
 
 /*
 const db = new pg.Client({
@@ -173,6 +173,19 @@ async function getMovieByName(name) {
     console.error(error);
   }
 }
+
+const getAll = (query, variables) => {
+  return new Promise((resolve, reject) => {
+    lite.all(query, variables, (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
 
 app.get("/login.ejs", (req, res) => {
   res.render("login.ejs");
@@ -458,9 +471,7 @@ function delay(time) {
 }
 
 async function waitOneSec() {
-    console.log('start timer');
     await delay(1000);
-    console.log('after 1 second');
 }
 
 async function wait100() {
@@ -481,6 +492,27 @@ app.get("/favorites.ejs", (req, res) => {
         rows.forEach(row => favorites.push(row));
         res.render('favorites.ejs', {
           favorites: favorites,
+          login: login
+        });
+      }
+    }
+  });
+});
+
+app.get("/watchlist.ejs", (req, res) => {
+  let watchlist = [];
+
+  lite.all("SELECT * FROM Watchlist JOIN Favorites ON Movies.movie_id = Watchlist.movie_id WHERE watchlist.user_id = ?;", [user.user_id], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+    } else {
+      if (rows === null) {
+        alert("Please add some movie or series to favorites");
+        res.redirect('/');
+      } else {
+        rows.forEach(row => watchlist.push(row));
+        res.render('watchlist.ejs', {
+          watchlist: watchlist,
           login: login
         });
       }
@@ -514,67 +546,27 @@ app.get("/", async (req, res) => {
 */
 
 
-  lite.all("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      upcomingMovies = rows;
-      // console.log("sql lite : sdadsaads " + rows);
-      // Process the retrieved rows
-      // rows.forEach(row => {
-      //   console.log(row); // Display each row
-      // });
-    }
-  });
+  // upcomingMovies = await new Promise((resolve, reject) => {
+  //   lite.all("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", [], (err, rows) => {
+  //   if (err) {
+  //     console.error(err.message);
+  //     reject(err);
+  //   } else {
+  //     resolve(rows);
+  //   }
+  //   });
+  // });
+  
+  
+  upcomingMovies = await getAll("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", []);
 
 
-  await waitOneSec();
-
-  /*
-const topRatedMoviesDetails = await Promise.all(
-  topRatedMoviesIds.map(async (topRatedMovieId) => {
-      const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot } = await getDetails(topRatedMovieId);
-      return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot };
-  })
-);
-
-await waitOneSec();
-
-*/
-
-
-  lite.all("SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8", [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      topRatedMovies = rows;
-      // console.log("sql lite : sdadsaads " + rows);
-      // // Process the retrieved rows
-      // rows.forEach(row => {
-      //   console.log(row); // Display each row
-      // });
-    }
-  });
-
-  await waitOneSec();
+  
+  topRatedMovies = await getAll("SELECT * FROM Movies WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 8", []);
 
 
 
-  lite.all("SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4", [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      topRatedSeries = rows;
-      // console.log("sql lite : sdadsaads " + rows);
-      // // Process the retrieved rows
-      // rows.forEach(row => {
-      //   console.log(row); // Display each row
-      // });
-    }
-  });
-
-  await waitOneSec();
-
+  topRatedSeries = await getAll("SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4", []);
 
   res.render("index.ejs", {
 
@@ -587,14 +579,11 @@ await waitOneSec();
 });
 
 app.post("/movie-details.ejs", async (req, res) => {
-    let genreIDArray=[];
+  let genreIDArray=[];
   let commentArray = [];
-  let id = req.body["movieId"];
-  idArray.push(id);
-  id = idArray[idArray.length - 1];
-  if (id == undefined) {
-    id = idArray[idArray.length - 2];
-  }
+  const id = req.body["movieId"];
+  let isFavMovie = false;
+  let inWatchlist = false;
   let movieDetails = await getDetails(id);
   let relatedMoviesIds = await getMoreLikeThis(id, 4);
 
@@ -788,19 +777,12 @@ app.post("/movie-details.ejs", async (req, res) => {
       }
     });
     }
-    
-
-
-    console.log(movieDetails.Plot);
-    console.log(movieDetails.Type);
-    console.log("dsadsasdsadsadsadasd");
-    console.log(movieDetails);
 
   ///// comment yazma
   if (login) {
     let comment = req.body.comment;
-    let username = user.username;
     const favMovId = req.body.favMovieId;
+    const watchlistId = req.body.watchlistMovieId;
 
     if (typeof comment !== 'undefined' && movieDetails.Type === "movie") {
       lite.run('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES(?, ?, ?, ?) RETURNING *',
@@ -832,7 +814,7 @@ app.post("/movie-details.ejs", async (req, res) => {
           }
         });
     } else if (typeof favMovId !== 'undefined' && movieDetails.Type === 'series') {
-      lite.run('INSERT INTO Favorites(user_id, series_id) VALUES(?, ?) WHERE NOT EXISTS (SELECT * FROM Favorites WHERE (user_id = ?) AND (series_id = ?))',
+      lite.run('INSERT INTO Favorites(user_id, series_id) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM Favorites WHERE user_id = ? AND series_id = ?)',
         [user.user_id, id, user.user_id, id], (err, res) => {
           if (err) {
             console.error('An error has accorded : ', err);
@@ -842,6 +824,55 @@ app.post("/movie-details.ejs", async (req, res) => {
           }
         });
     }
+    if (typeof watchlistId !== 'undefined' && movieDetails.Type === 'movie') {
+      lite.run('INSERT INTO Watchlist(user_id, movie_id) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM Watchlist WHERE user_id = ? AND movie_id = ?)',
+        [user.user_id, id, user.user_id, id], (err, res) => {
+          if (err) {
+            console.error('An error has accorded : ', err);
+          } else {
+            console.log("Successfully added movie/series to favorites");
+            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+          }
+        });
+    } else if (typeof watchlistId !== 'undefined' && movieDetails.Type === 'series') {
+      lite.run('INSERT INTO Watchlist(user_id, series_id) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM Watchlist WHERE user_id = ? AND series_id = ?)',
+        [user.user_id, id, user.user_id, id], (err, res) => {
+          if (err) {
+            console.error('An error has accorded : ', err);
+          } else {
+            console.log("Successfully added movie/series to favorites");
+            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+          }
+        });
+    }
+    await new Promise((resolve, reject) => {
+      lite.get('SELECT favorite_id FROM Favorites WHERE user_id = ? AND (movie_id = ?  OR series_id = ?);',
+        [user.user_id, id, id], (err, res) => {
+          if (err) {
+            console.error('An error has accorded : ', err);
+            reject(err);
+          } else {
+            if (typeof res != 'undefined') {
+              isFavMovie = true;
+            }
+            resolve(res);
+          }
+        });
+    });
+    await new Promise((resolve, reject) => {
+      lite.get('SELECT id FROM Watchlist WHERE user_id = ? AND (movie_id = ?  OR series_id = ?);', 
+      [user.user_id, id, id], (err, res) => {
+        if (err) {
+          console.error('An error has accorded : ', err);
+          reject(err);
+        } else {
+          if(typeof res != 'undefined') {
+            inWatchlist = true;
+          }
+          resolve(res);
+        }
+      });
+    });
   }
   // } else {
   //   res.redirect("/register.ejs")
@@ -857,13 +888,16 @@ app.post("/movie-details.ejs", async (req, res) => {
       WHERE Movies.movie_id = ?
     `;
 
-    lite.all(query, [id], (err, res) => {
-      if (err) {
-        console.error(err);
-      }
-      else {
-        commentArray = res;
-      }
+    commentArray = await new Promise((resolve, reject) => {
+      lite.all(query, [id], (err, res) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        }
+        else {
+          resolve(res);
+        }
+      });
     });
   }
   else if (movieDetails.Type === "series") {
@@ -875,26 +909,27 @@ app.post("/movie-details.ejs", async (req, res) => {
       WHERE Series.series_id = ?
     `;
 
-    lite.all(query, [id], (err, res) => {
-      if (err) {
-        console.error(err);
-      }
-      else {
-        commentArray = res;
-      }
+    commentArray = await new Promise((resolve, reject) => {
+      lite.all(query, [id], (err, res) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        }
+        else {
+          resolve(res);
+        }
+      });
     });
   }
 
-
-  await waitOneSec();
-  console.log("arrrayyyyyy: " + commentArray);
-
-
   res.render("movie-details.ejs", {
     login: login,
+    isFavorite: isFavMovie,
+    inWatchlist: inWatchlist,
     movieDetails: movieDetails,
     relatedMoviesDetails: relatedMoviesDetails,
-    commentArray: commentArray
+    commentArray: commentArray,
+
   });
 });
 

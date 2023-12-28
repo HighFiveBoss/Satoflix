@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorites</title>
+    <title>Watch List</title>
 
     <!-- 
     - favicon
@@ -74,14 +74,21 @@
                     </script>
                     <% } else { %>
                         <button id="profileButton" class="btn btn-primary">Profile</button>
-                        <button id="favoriteButton" class="btn btn-primary"><ion-icon
-                                name="heart-outline"></ion-icon></button>
+                        <button id="favoriteButton" class="btn btn-primary">
+                            <ion-icon name="heart-outline"></ion-icon>
+                        </button>
+                        <button id="watchlistButton" class="btn btn-primary">
+                            <ion-icon name="play-outline"></ion-icon>
+                        </button>
                         <script>
                             document.getElementById('profileButton').addEventListener('click', function () {
                                 window.location.href = '/profile.ejs';
                             });
                             document.getElementById('favoriteButton').addEventListener('click', function () {
                                 window.location.href = '/favorites.ejs';
+                            });
+                            document.getElementById('watchlistButton').addEventListener('click', function () {
+                                window.location.href = '/watchlist.ejs';
                             });
                         </script>
                         <% } %>
@@ -176,36 +183,36 @@
             <section class="tv-series">
                 <div class="container">
 
-                    <h2 class="h2 section-title">Favorite Movies</h2>
+                    <h2 class="h2 section-title">Your Watch List</h2>
 
                     <ul class="movies-list">
-                        <% favorites.forEach((favorite, index)=> { %>
+                        <% watchList.forEach((item, index)=> { %>
                             <li>
                                 <div class="movie-card">
 
-                                    <form id="favoriteDetailsForm<%= index %>" action="./movie-details.ejs"
+                                    <form id="watchlistDetailsForm<%= index %>" action="./movie-details.ejs"
                                         method="post">
-                                        <input type="hidden" name="movieName" value="<%= favorite.title %>">
-                                        <input type="hidden" name="movieId" value="<%= favorite.movie_id %>">
+                                        <input type="hidden" name="movieName" value="<%= item.title %>">
+                                        <input type="hidden" name="movieId" value="<%= item.movie_id %>">
                                     </form>
 
                                     <a href="./movie-details.ejs"
-                                        onclick="document.getElementById('favoriteDetailsForm<%= index %>').submit(); return false">
+                                        onclick="document.getElementById('watchlistDetailsForm<%= index %>').submit(); return false">
                                         <figure class="card-banner">
-                                            <img src="<%= favorite.poster %>" alt="<%= favorite.title %> movie poster">
+                                            <img src="<%= item.poster %>" alt="<%= item.title %> movie poster">
                                         </figure>
                                     </a>
 
                                     <div class="title-wrapper">
                                         <a href="./movie-details.ejs"
-                                            onclick="document.getElementById('favoriteDetailsForm<%= index %>').submit(); return false">
+                                            onclick="document.getElementById('watchlistDetailsForm<%= index %>').submit(); return false">
                                             <h3 class="card-title">
-                                                <%= favorite.title %>
+                                                <%= item.title %>
                                             </h3>
                                         </a>
 
-                                        <time datetime="<%= favorite.year %>">
-                                            <%= favorite.year %>
+                                        <time datetime="<%= item.year %>">
+                                            <%= item.year %>
                                         </time>
                                     </div>
 
@@ -214,15 +221,15 @@
 
                                         <div class="duration">
                                             <ion-icon name="time-outline"></ion-icon>
-                                            <time datetime="PT<%= favorite.runtime.slice(0, -4) %>M">
-                                                <%= favorite.runtime.slice(0, -4) %>
+                                            <time datetime="PT<%= item.runtime.slice(0, -4) %>M">
+                                                <%= item.runtime.slice(0, -4) %>
                                             </time>
                                         </div>
 
                                         <div class="rating">
                                             <ion-icon name="star"></ion-icon>
                                             <data>
-                                                <%= favorite.imdb_rating %>
+                                                <%= item.imdb_rating %>
                                             </data>
                                         </div>
                                     </div>
