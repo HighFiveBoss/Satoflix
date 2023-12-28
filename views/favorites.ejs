@@ -76,12 +76,18 @@
                         <button id="profileButton" class="btn btn-primary">Profile</button>
                         <button id="favoriteButton" class="btn btn-primary"><ion-icon
                                 name="heart-outline"></ion-icon></button>
+                        <button id="watchlistButton" class="btn btn-primary">
+                            <ion-icon name="play-outline"></ion-icon>
+                        </button>
                         <script>
                             document.getElementById('profileButton').addEventListener('click', function () {
                                 window.location.href = '/profile.ejs';
                             });
                             document.getElementById('favoriteButton').addEventListener('click', function () {
                                 window.location.href = '/favorites.ejs';
+                            });
+                            document.getElementById('watchlistButton').addEventListener('click', function () {
+                                window.location.href = '/watchlist.ejs';
                             });
                         </script>
                         <% } %>

@@ -66,9 +66,21 @@
         </div>
 
         <button id="btn btn-primary">Log in</button>
+        <button id="favoriteButton" class="btn btn-primary">
+          <ion-icon name="heart-outline"></ion-icon>
+        </button>
+        <button id="watchlistButton" class="btn btn-primary">
+          <ion-icon name="play-outline"></ion-icon>
+        </button>
         <script>
-          document.getElementById('btn btn-primary').addEventListener('click', function() {
+          document.getElementById('btn btn-primary').addEventListener('click', function () {
             window.location.href = '/login.ejs';
+          });
+          document.getElementById('favoriteButton').addEventListener('click', function () {
+            window.location.href = '/favorites.ejs';
+          });
+          document.getElementById('watchlistButton').addEventListener('click', function () {
+            window.location.href = '/watchlist.ejs';
           });
         </script>
       </div>
@@ -175,39 +187,47 @@
           </div>
 
           <% for (const category in categoryCounter) { %>
-            <p class="section-subtitle"><%= category %></p>
-            
-          <ul class="movies-list has-scrollbar">
+            <p class="section-subtitle">
+              <%= category %>
+            </p>
 
-            <% seriesgenres.forEach((series, index) => { %>
-                <%  if(series.genre==category) { %>
-              <li>
-                <div class="movie-card">
-                  <form id="upcomingMovieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                    <input type="hidden" name="movieName" value="<%= series.title %>">
-                    <input type="hidden" name="movieId" value="<%= series.series_id %>">
-                  </form>
-          
-                  <a href="./movie-details.ejs" onclick="document.getElementById('upcomingMovieDetailsForm<%= index %>').submit(); return false">
-                    <figure class="card-banner">
-                      <img src="<%= series.poster %>" alt="<%= series.title %> movie poster">
-                    </figure>
-                  </a>
-          
-                  <div class="title-wrapper">
-                    <a href="./movie-details.ejs" onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
-                      <h3 class="card-title"><%= series.title %></h3>
-                    </a>
-          
-                    <time datetime="<%= series.year %>"><%= series.year %></time>
-                  </div>
-                </div>
-              </li>
-              <% } %>
-            <% }); %>
-          </ul>
-          <% } %>
-          
+            <ul class="movies-list has-scrollbar">
+
+              <% seriesgenres.forEach((series, index)=> { %>
+                <% if(series.genre==category) { %>
+                  <li>
+                    <div class="movie-card">
+                      <form id="upcomingMovieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
+                        <input type="hidden" name="movieName" value="<%= series.title %>">
+                        <input type="hidden" name="movieId" value="<%= series.series_id %>">
+                      </form>
+
+                      <a href="./movie-details.ejs"
+                        onclick="document.getElementById('upcomingMovieDetailsForm<%= index %>').submit(); return false">
+                        <figure class="card-banner">
+                          <img src="<%= series.poster %>" alt="<%= series.title %> movie poster">
+                        </figure>
+                      </a>
+
+                      <div class="title-wrapper">
+                        <a href="./movie-details.ejs"
+                          onclick="document.getElementById('movieDetailsForm<%= index %>').submit(); return false">
+                          <h3 class="card-title">
+                            <%= series.title %>
+                          </h3>
+                        </a>
+
+                        <time datetime="<%= series.year %>">
+                          <%= series.year %>
+                        </time>
+                      </div>
+                    </div>
+                  </li>
+                  <% } %>
+                    <% }); %>
+            </ul>
+            <% } %>
+
 
         </div>
       </section>
@@ -222,141 +242,141 @@
 
 
 
-  <!-- 
+      <!-- 
     - #FOOTER
   -->
 
-  <footer class="footer">
+      <footer class="footer">
 
-    <div class="footer-top">
-      <div class="container">
+        <div class="footer-top">
+          <div class="container">
 
-        <div class="footer-brand-wrapper">
+            <div class="footer-brand-wrapper">
 
-          <a href="./index.ejs" class="logo">
-            <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
-          </a>
+              <a href="./index.ejs" class="logo">
+                <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
+              </a>
 
-          <ul class="footer-list">
+              <ul class="footer-list">
 
-            <li>
-              <a href="/" class="footer-link">Home</a>
-            </li>
+                <li>
+                  <a href="/" class="footer-link">Home</a>
+                </li>
 
-            <li>
-              <a href="./movies.ejs" class="footer-link">Movie</a>
-            </li>
+                <li>
+                  <a href="./movies.ejs" class="footer-link">Movie</a>
+                </li>
 
-            <li>
-              <a href="./series.ejs" class="footer-link">Series</a>
-            </li>
+                <li>
+                  <a href="./series.ejs" class="footer-link">Series</a>
+                </li>
 
 
-            <li>
-              <a href="#" class="footer-link">Pricing</a>
-            </li>
+                <li>
+                  <a href="#" class="footer-link">Pricing</a>
+                </li>
 
-          </ul>
+              </ul>
 
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="quicklink-wrapper">
+
+              <ul class="quicklink-list">
+
+                <li>
+                  <a href="#" class="quicklink-link">Faq</a>
+                </li>
+
+                <li>
+                  <a href="#" class="quicklink-link">Help center</a>
+                </li>
+
+                <li>
+                  <a href="#" class="quicklink-link">Terms of use</a>
+                </li>
+
+                <li>
+                  <a href="#" class="quicklink-link">Privacy</a>
+                </li>
+
+              </ul>
+
+              <ul class="social-list">
+
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-facebook"></ion-icon>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-twitter"></ion-icon>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-pinterest"></ion-icon>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-linkedin"></ion-icon>
+                  </a>
+                </li>
+
+              </ul>
+
+            </div>
+
+          </div>
         </div>
 
-        <div class="divider"></div>
+        <div class="footer-bottom">
+          <div class="container">
 
-        <div class="quicklink-wrapper">
+            <p class="copyright">
+              &copy; 2022 <a href="#">SATOFLIX</a>. All Rights Reserved
+            </p>
 
-          <ul class="quicklink-list">
+            <img src="images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
 
-            <li>
-              <a href="#" class="quicklink-link">Faq</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Help center</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Terms of use</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Privacy</a>
-            </li>
-
-          </ul>
-
-          <ul class="social-list">
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-facebook"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-twitter"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-pinterest"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-            </li>
-
-          </ul>
-
+          </div>
         </div>
 
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="container">
-
-        <p class="copyright">
-          &copy; 2022 <a href="#">SATOFLIX</a>. All Rights Reserved
-        </p>
-
-        <img src="images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
-
-      </div>
-    </div>
-
-  </footer>
+      </footer>
 
 
 
 
 
-  <!-- 
+      <!-- 
     - #GO TO TOP
   -->
 
-  <a href="#top" class="go-top" data-go-top>
-    <ion-icon name="chevron-up"></ion-icon>
-  </a>
+      <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+      </a>
 
 
 
 
 
-  <!-- 
+      <!-- 
     - custom js link
   -->
-  <script src="/script.js"></script>
+      <script src="/script.js"></script>
 
-  <!-- 
+      <!-- 
     - ionicon link
   -->
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+      <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+      <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
 </body>
 

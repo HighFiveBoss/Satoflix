@@ -78,12 +78,18 @@
                         <button id="profileButton" class="btn btn-primary">Profile</button>
                         <button id="favoriteButton" class="btn btn-primary"><ion-icon
                                 name="heart-outline"></ion-icon></button>
+                        <button id="watchlistButton" class="btn btn-primary">
+                            <ion-icon name="play-outline"></ion-icon>
+                        </button>
                         <script>
                             document.getElementById('profileButton').addEventListener('click', function () {
                                 window.location.href = '/profile.ejs';
                             });
                             document.getElementById('favoriteButton').addEventListener('click', function () {
                                 window.location.href = '/favorites.ejs';
+                            });
+                            document.getElementById('watchlistButton').addEventListener('click', function () {
+                                window.location.href = '/watchlist.ejs';
                             });
                         </script>
                         <% } %>
@@ -183,43 +189,45 @@
                     </h2>
 
                     <% if (response) {%>
-                    <ul class="movies-list">
-                        <% searchItems.forEach((item, index)=> { %>
-                            <li>
-                                <div class="movie-card">
+                        <ul class="movies-list">
+                            <% searchItems.forEach((item, index)=> { %>
+                                <li>
+                                    <div class="movie-card">
 
-                                    <form id="itemDetailsForm<%= index %>" action="./movie-details.ejs" method="post">
-                                        <input type="hidden" name="movieName" value="<%= item.Title %>">
-                                        <input type="hidden" name="movieId" value="<%= item.imdbID %>">
-                                    </form>
+                                        <form id="itemDetailsForm<%= index %>" action="./movie-details.ejs"
+                                            method="post">
+                                            <input type="hidden" name="movieName" value="<%= item.Title %>">
+                                            <input type="hidden" name="movieId" value="<%= item.imdbID %>">
+                                        </form>
 
-                                    <a href="./movie-details.ejs"
-                                        onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
-                                        <figure class="card-banner">
-                                            <img src="<%= item.Poster %>" alt="<%= item.Title %> movie poster">
-                                        </figure>
-                                    </a>
-
-                                    <div class="title-wrapper">
                                         <a href="./movie-details.ejs"
-                                            onclick="document.getElementById('itemDetailsForm<%= index %>').submit(); return false">
-                                            <h3 class="card-title">
-                                                <%= item.Title %>
-                                            </h3>
+                                            onclick="document.getElementById('seriesDetailsForm<%= index %>').submit(); return false">
+                                            <figure class="card-banner">
+                                                <img src="<%= item.Poster %>" alt="<%= item.Title %> movie poster">
+                                            </figure>
                                         </a>
-                                    </div>
 
-                                    <div class="card-meta">
-                                        <div class="badge badge-outline">2K</div>
-                                    </div>
+                                        <div class="title-wrapper">
+                                            <a href="./movie-details.ejs"
+                                                onclick="document.getElementById('itemDetailsForm<%= index %>').submit(); return false">
+                                                <h3 class="card-title">
+                                                    <%= item.Title %>
+                                                </h3>
+                                            </a>
+                                        </div>
 
-                                </div>
-                            </li>
-                            <% }); %>
-                    </ul>
-                    <% } else { %>
-                        <h2 style="color: white;">Opps. We couldn't find any movie or series named <%= search %></h2>
-                    <% } %>
+                                        <div class="card-meta">
+                                            <div class="badge badge-outline">2K</div>
+                                        </div>
+
+                                    </div>
+                                </li>
+                                <% }); %>
+                        </ul>
+                        <% } else { %>
+                            <h2 style="color: white;">Opps. We couldn't find any movie or series named <%= search %>
+                            </h2>
+                            <% } %>
 
                 </div>
             </section>
