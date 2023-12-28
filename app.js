@@ -1004,7 +1004,14 @@ app.post("/movie-details.ejs", async (req, res) => {
       });
     });
   }
-  console.log(moreDetails.trailer.slice(28));
+  let backdrop = null, trailer = null;
+  if (moreDetails.backdrop != null){
+    backdrop = moreDetails.backdrop;
+  }
+
+  if(moreDetails.trailer != null){
+    trailer = moreDetails.trailer.slice(28);
+  }
 
   res.render("movie-details.ejs", {
     login: login,
@@ -1013,8 +1020,8 @@ app.post("/movie-details.ejs", async (req, res) => {
     movieDetails: movieDetails,
     relatedMoviesDetails: relatedMoviesDetails,
     commentArray: commentArray,
-    background: moreDetails.backdrop,
-    trailer: moreDetails.trailer.slice(28)
+    background: backdrop,
+    trailer: trailer
   });
 });
 
