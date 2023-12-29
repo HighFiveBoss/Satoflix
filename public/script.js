@@ -105,3 +105,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
+const apiKey = 'AIzaSyDHJPT0XZauRMWo3zhG062F-TI3ZFN-qck';
+  const playerContainer = document.getElementById('player');
+  let player;
+
+  function openYouTubePlayer(videoId) {
+    // Create a new iframe for the YouTube player
+    playerContainer.innerHTML = '<iframe id="youtubeIframe" width="560" height="315" src="https://www.youtube.com/embed/' + videoId + '?enablejsapi=1&autoplay=1" frameborder="0" allowfullscreen></iframe>';
+
+    // Display the modal
+    document.getElementById('youtubeModal').style.display = 'flex';
+
+    // Load the YouTube player API script
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // Set up the YouTube player when the API is ready
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('youtubeIframe', {
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange,
+          'onError': onPlayerError
+        }
+      });
+    };
+  }
+
+  function onPlayerError(event){
+    console.log(event.target)
+  }
+
+  function onPlayerReady(event) {
+    // You can do something when the player is ready
+    event.target.playVideo();
+  }
+
+  function onPlayerStateChange(event) {
+    // You can do something when the player state changes
+    // For example, close the modal when the video ends
+    if (event.data === YT.PlayerState.ENDED) {
+      closeYouTubePlayer();
+    }
+  }
+
+  function closeYouTubePlayer() {
+    // Stop and destroy the YouTube player
+    if (player) {
+      player.stopVideo();
+      player.destroy();
+    }
+    // Hide the modal
+    document.getElementById('youtubeModal').style.display = 'none';
+  }
