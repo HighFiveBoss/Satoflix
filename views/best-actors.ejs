@@ -186,15 +186,15 @@
 
           </div>
 
-          <% for (const category in categoryCounter) { %>
+          <% for (let i=0; i<actorCounter.length;i++) { %>
             <p class="section-subtitle">
-              <%= category %>
+              <%= actorCounter[i] %>
             </p>
 
             <ul class="movies-list has-scrollbar">
 
-              <% moviesgenres.forEach((movie, index)=> { %>
-                <% if(movie.genre==category) { %>
+              <% bestActors.forEach((movie, index)=> { %>
+                <% if(movie.actor==actorCounter[i]) { %>
                   <li>
                     <div class="movie-card">
                       <form id="upcomingMovieDetailsForm<%= index %>" action="./movie-details.ejs" method="post">

@@ -247,8 +247,323 @@ app.get("/movies.ejs", async (req, res) => {
 });
 
 app.post('/search', async (req, res) => {
+  let genreIDArray = [];
+  let castIDArray = [];
   const search = req.body.searchQuery;
   const resultList = await getMovieByName(search);
+
+  console.log(resultList);
+
+
+  if(resultList.Response === 'True'){
+    let movieDetails = await getDetails(resultList.Search[0].imdbID);  
+
+  if (movieDetails.Type === "series") {
+    lite.serialize(async () => {
+
+        let genre = movieDetails.Genre;
+        //console.log("Genreeeee :  "+genre);
+        let splitGenre = genre.split(", ");
+        //console.log("splitttt :  "+splitGenre);
+
+        let cast = movieDetails.Actors;
+        //console.log("cast :  "+cast);
+        let splitCast = cast.split(", ");
+        //console.log("splitCast :  "+splitCast);
+
+        for (let j = 0; j < splitGenre.length; j++) {
+          lite.run(`INSERT INTO Genres(genre)
+            SELECT ?
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Genres WHERE genre = ?
+            )`, [splitGenre[j], splitGenre[j]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zaten var.`);
+            } else {
+              //console.log(`eklendi. ID:`);
+            }
+            //console.log("1");
+          });
+
+
+          await wait100();
+
+          lite.all('SELECT genre_id FROM Genres WHERE genre = ? ', [splitGenre[j]], (err, rows) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            // rows dizisi içinde tüm id'leri alabiliriz
+            //console.log(rows);
+            //console.log(rows[0]);
+            genreIDArray.push(rows[0].genre_id);
+            //console.log("genreıdarrayyy:  "+ genreIDArray);
+            //console.log("2");
+          });
+
+
+          await wait100();
+
+          lite.run(`INSERT INTO seriesgenres(series_id,genre_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM seriesgenres WHERE series_id = ? AND genre_id = ?
+                )`, [movieDetails.imdbID, genreIDArray[genreIDArray.length - 1], movieDetails.imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+            } else {
+              //console.log(` eklendi. ID: `);
+
+
+            }
+            //console.log("3");
+          });
+          //}
+
+          await wait100();
+
+        }
+
+        for (let k = 0; k < splitCast.length; k++) {
+          lite.run(`INSERT INTO Actors(actor)
+            SELECT ?
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Actors WHERE actor = ?
+            )`, [splitCast[k], splitCast[k]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zaten var.`);
+            } else {
+              //console.log(`eklendi. ID:`);
+            }
+            //console.log("1");
+          });
+
+
+          await wait100();
+
+          lite.all('SELECT actor_id FROM Actors WHERE actor = ? ', [splitCast[k]], (err, rows) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            // rows dizisi içinde tüm id'leri alabiliriz
+            //console.log(rows);
+            //console.log(rows[0]);
+            castIDArray.push(rows[0].actor_id);
+            //console.log("genreıdarrayyy:  "+ genreIDArray);
+            //console.log("2");
+          });
+
+
+          await wait100();
+
+          lite.run(`INSERT INTO movieseriesactors(series_id,actor_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM movieseriesactors WHERE series_id = ? AND actor_id = ?
+                )`, [movieDetails.imdbID, castIDArray[castIDArray.length - 1], movieDetails.imdbID, castIDArray[castIDArray.length - 1]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+            } else {
+              //console.log(` eklendi. ID: `);
+
+
+            }
+            //console.log("3");
+          });
+          //}
+
+          await wait100();
+
+        }
+
+
+        if (movieDetails.imdbRating == 'N/A') {
+          movieDetails.imdbRating = null;
+        }
+        let director = movieDetails.Director;
+        //console.log("Genreeeee :  "+director);
+        let splitDirector = director.split(", ");
+        //console.log("splitttt :  "+splitDirector);          
+        lite.run('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (series_id) DO NOTHING RETURNING *',
+          [movieDetails.imdbID, movieDetails.Title, movieDetails.Poster, movieDetails.Year,
+            movieDetails.Runtime, movieDetails.imdbRating, movieDetails.Plot, splitDirector[0]], (err, res) => {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } else {
+              console.log('Yeni kullanıcı eklendi:');
+              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+            }
+            //console.log("4");
+          });
+        //console.log("4");
+        await wait100();
+
+
+      
+    });
+  }
+  else if (movieDetails.Type === "movie") {
+    lite.serialize(async () => {
+     
+
+        let genre = movieDetails.Genre;
+        //console.log("Genreeeee :  "+genre);
+        let splitGenre = genre.split(", ");
+        //console.log("splitttt :  "+splitGenre);
+
+        let cast = movieDetails.Actors;
+        //console.log("cast :  "+cast);
+        let splitCast = cast.split(", ");
+        //console.log("splitCast :  "+splitCast);
+
+        for (let j = 0; j < splitGenre.length; j++) {
+          lite.run(`INSERT INTO Genres(genre)
+            SELECT ?
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Genres WHERE genre = ?
+            )`, [splitGenre[j], splitGenre[j]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zaten var.`);
+            } else {
+              //console.log(`eklendi. ID:`);
+            }
+            //console.log("1");
+          });
+
+
+          await wait100();
+
+          lite.all('SELECT genre_id FROM Genres WHERE genre = ? ', [splitGenre[j]], (err, rows) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            // rows dizisi içinde tüm id'leri alabiliriz
+            //console.log(rows);
+            //console.log(rows[0]);
+            genreIDArray.push(rows[0].genre_id);
+            //console.log("genreıdarrayyy:  "+ genreIDArray);
+            //console.log("2");
+          });
+
+
+          await wait100();
+
+          lite.run(`INSERT INTO moviegenres(movie_id,genre_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM moviegenres WHERE movie_id = ? AND genre_id = ?
+                )`, [movieDetails.imdbID, genreIDArray[genreIDArray.length - 1], movieDetails.imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+            } else {
+              //console.log(` eklendi. ID: `);
+
+
+            }
+            //console.log("3");
+          });
+          //}
+
+          await wait100();
+
+        }
+
+        for (let k = 0; k < splitCast.length; k++) {
+          lite.run(`INSERT INTO Actors(actor)
+            SELECT ?
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Actors WHERE actor = ?
+            )`, [splitCast[k], splitCast[k]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zaten var.`);
+            } else {
+              //console.log(`eklendi. ID:`);
+            }
+            //console.log("1");
+          });
+
+
+          await wait100();
+
+          lite.all('SELECT actor_id FROM Actors WHERE actor = ? ', [splitCast[k]], (err, rows) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            // rows dizisi içinde tüm id'leri alabiliriz
+            //console.log(rows);
+            //console.log(rows[0]);
+            castIDArray.push(rows[0].actor_id);
+            //console.log("genreıdarrayyy:  "+ genreIDArray);
+            //console.log("2");
+          });
+
+
+          await wait100();
+
+          lite.run(`INSERT INTO movieseriesactors(movie_id,actor_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM movieseriesactors WHERE movie_id = ? AND actor_id = ?
+                )`, [movieDetails.imdbID, castIDArray[castIDArray.length - 1], movieDetails.imdbID, castIDArray[castIDArray.length - 1]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+            } else {
+              //console.log(` eklendi. ID: `);
+
+
+            }
+            //console.log("3");
+          });
+          //}
+
+          await wait100();
+
+        }
+
+
+        if (movieDetails.imdbRating == 'N/A') {
+          movieDetails.imdbRating = null;
+        }
+        let director = movieDetails.Director;
+        //console.log("Genreeeee :  "+director);
+        let splitDirector = director.split(", ");
+        //console.log("splitttt :  "+splitDirector);          
+        lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
+          [movieDetails.imdbID, movieDetails.Title, movieDetails.Poster, movieDetails.Year,
+            movieDetails.Runtime, movieDetails.imdbRating, movieDetails.Plot, splitDirector[0]], (err, res) => {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } else {
+              console.log('Yeni kullanıcı eklendi:');
+              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+            }
+            //console.log("4");
+          });
+        //console.log("4");
+        await wait100();
+
+
+      
+    });
+  }
+  }
+  
+
   if (resultList.Response === 'False') {
     res.render("search.ejs", {
       login: login,
@@ -302,6 +617,51 @@ app.get("/series.ejs", async (req, res) => {
     categoryCounter: categoryCounter
   });
 });
+
+
+app.get("/best-actors.ejs", async (req, res) => {
+  let bestActors;
+  let actorCounter = [];
+  const query = `
+  SELECT *
+  FROM (
+      SELECT Actors.actor_id,Actors.actor, Movies.*, 
+             ROW_NUMBER() OVER(PARTITION BY Actors.actor_id ORDER BY Movies.movie_id) AS row_num
+      FROM Actors
+      JOIN movieseriesactors ON Actors.actor_id = movieseriesactors.actor_id
+      JOIN Movies ON movieseriesactors.movie_id = Movies.movie_id
+      WHERE Actors.actor_id IN (57, 20, 26, 21, 82, 90, 17, 101, 119, 128)
+  ) AS actor_movies
+  WHERE row_num <= 4
+  ORDER BY actor_id, movie_id, imdb_rating DESC  
+`;
+
+  lite.all(query, [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return;
+    }
+    //console.log("seriessssss:");
+    bestActors = rows;
+    //console.log(bestActors);
+    
+    for(let i=0;i<bestActors.length;i++){
+      if(bestActors[i].row_num==1){
+        actorCounter.push(bestActors[i].actor);
+        //console.log(bestActors[i].actor);
+      }
+    }
+
+  });
+
+  await waitOneSec();
+
+  res.render("best-actors.ejs", {
+    bestActors: bestActors,
+    actorCounter: actorCounter
+  });
+});
+
 
 app.post('/profile.ejs', async (req, res) => {
   const email = req.body.email;
@@ -580,33 +940,42 @@ app.get("/", async (req, res) => {
 
 app.post("/movie-details.ejs", async (req, res) => {
   let genreIDArray = [];
+  let castIDArray = [];
   let commentArray = [];
   const id = req.body["movieId"];
   let isFavMovie = false;
   let inWatchlist = false;
+  //console.log("id  : "+id);
   let movieDetails = await getDetails(id);
+  //console.log("movieDetails  : "+movieDetails);
   let relatedMoviesIds = await getMoreLikeThis(id, 4);
 
   let relatedMoviesDetails = await Promise.all(
     relatedMoviesIds.map(async (relatedMoviesId) => {
-      const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot, Genre, Director } = await getDetails(relatedMoviesId.slice(7, -1));
-      return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot, Genre, Director };
+      const { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot, Genre, Director, Type , Actors } = await getDetails(relatedMoviesId.slice(7, -1));
+      return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot, Genre, Director , Type, Actors };
     })
   );
   //console.log(relatedMoviesDetails);
 
 
 
-
-
-  if (movieDetails.Type === "series") {
+    //await waitOneSec();
     lite.serialize(async () => {
       for (let i = 0; i < relatedMoviesDetails.length; i++) {
+        
+
+        if (relatedMoviesDetails[i].Type === "series") {
 
         let genre = relatedMoviesDetails[i].Genre;
         //console.log("Genreeeee :  "+genre);
         let splitGenre = genre.split(", ");
         //console.log("splitttt :  "+splitGenre);
+
+        let cast = relatedMoviesDetails[i].Actors;
+        //console.log("cast :  "+cast);
+        let splitCast = cast.split(", ");
+        //console.log("splitCast :  "+splitCast);
 
         for (let j = 0; j < splitGenre.length; j++) {
           lite.run(`INSERT INTO Genres(genre)
@@ -663,6 +1032,68 @@ app.post("/movie-details.ejs", async (req, res) => {
           await wait100();
 
         }
+
+
+
+        for (let k = 0; k < splitCast.length; k++) {
+          lite.run(`INSERT INTO Actors(actor)
+            SELECT ?
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Actors WHERE actor = ?
+            )`, [splitCast[k], splitCast[k]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zaten var.`);
+            } else {
+              //console.log(`eklendi. ID:`);
+            }
+            //console.log("1");
+          });
+
+
+          await wait100();
+
+          lite.all('SELECT actor_id FROM Actors WHERE actor = ? ', [splitCast[k]], (err, rows) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            // rows dizisi içinde tüm id'leri alabiliriz
+            //console.log(rows);
+            //console.log(rows[0]);
+            castIDArray.push(rows[0].actor_id);
+            //console.log("genreıdarrayyy:  "+ genreIDArray);
+            //console.log("2");
+          });
+
+
+          await wait100();
+
+          lite.run(`INSERT INTO movieseriesactors(series_id,actor_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM movieseriesactors WHERE series_id = ? AND actor_id = ?
+                )`, [relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1], relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1]], function (err) {
+            if (err) {
+              console.error('Ekleme hatası:', err);
+            } if (this.changes === 0) {
+              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+            } else {
+              //console.log(` eklendi. ID: `);
+
+
+            }
+            //console.log("3");
+          });
+          //}
+
+          await wait100();
+
+        }
+
+
+
+
         if (relatedMoviesDetails[i].imdbRating == 'N/A') {
           relatedMoviesDetails[i].imdbRating = null;
         }
@@ -686,97 +1117,164 @@ app.post("/movie-details.ejs", async (req, res) => {
 
 
       }
-    });
-  }
-  else {
-    lite.serialize(async () => {
-      for (let i = 0; i < relatedMoviesDetails.length; i++) {
 
-        let genre = relatedMoviesDetails[i].Genre;
-        //console.log("Genreeeee :  "+genre);
-        let splitGenre = genre.split(", ");
-        //console.log("splitttt :  "+splitGenre);
+        else if (relatedMoviesDetails[i].Type === "movie") {
+              let genre = relatedMoviesDetails[i].Genre;
+              //console.log("Genreeeee :  "+genre);
+              let splitGenre = genre.split(", ");
+              //console.log("splitttt :  "+splitGenre);
 
-        for (let j = 0; j < splitGenre.length; j++) {
-          lite.run(`INSERT INTO Genres(genre)
-            SELECT ?
-            WHERE NOT EXISTS (
-                SELECT 1 FROM Genres WHERE genre = ?
-            )`, [splitGenre[j], splitGenre[j]], function (err) {
-            if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
-            }
-            //console.log("1");
-          });
+              let cast = relatedMoviesDetails[i].Actors;
+              //console.log("cast :  "+cast);
+              let splitCast = cast.split(", ");
+              //console.log("splitCast :  "+splitCast);
+
+      
+              for (let j = 0; j < splitGenre.length; j++) {
+                lite.run(`INSERT INTO Genres(genre)
+                  SELECT ?
+                  WHERE NOT EXISTS (
+                      SELECT 1 FROM Genres WHERE genre = ?
+                  )`, [splitGenre[j], splitGenre[j]], function (err) {
+                  if (err) {
+                    console.error('Ekleme hatası:', err);
+                  } if (this.changes === 0) {
+                    //console.log(` zaten var.`);
+                  } else {
+                    //console.log(`eklendi. ID:`);
+                  }
+                  //console.log("1");
+                });
+      
+      
+                await wait100();
+      
+                lite.all('SELECT genre_id FROM Genres WHERE genre = ? ', [splitGenre[j]], (err, rows) => {
+                  if (err) {
+                    return console.error(err.message);
+                  }
+                  // rows dizisi içinde tüm id'leri alabiliriz
+                  //console.log(rows);
+                  //console.log(rows[0]);
+                  genreIDArray.push(rows[0].genre_id);
+                  //console.log("genreıdarrayyy:  "+ genreIDArray);
+                  //console.log("2");
+                });
+      
+      
+                await wait100();
+      
+                lite.run(`INSERT INTO moviegenres(movie_id,genre_id)
+                      SELECT ?, ?
+                      WHERE NOT EXISTS (
+                          SELECT 1 FROM moviegenres WHERE movie_id = ? AND genre_id = ?
+                      )`, [relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1], relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
+                  if (err) {
+                    console.error('Ekleme hatası:', err);
+                  } if (this.changes === 0) {
+                    //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+                  } else {
+                    //console.log(` eklendi. ID: `);
+      
+      
+                  }
+                  //console.log("3");
+                });
+                //}
+      
+                await wait100();
+      
+              }
 
 
-          await wait100();
 
-          lite.all('SELECT genre_id FROM Genres WHERE genre = ? ', [splitGenre[j]], (err, rows) => {
-            if (err) {
-              return console.error(err.message);
-            }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
-            genreIDArray.push(rows[0].genre_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
-          });
+              for (let k = 0; k < splitCast.length; k++) {
+                lite.run(`INSERT INTO Actors(actor)
+                  SELECT ?
+                  WHERE NOT EXISTS (
+                      SELECT 1 FROM Actors WHERE actor = ?
+                  )`, [splitCast[k], splitCast[k]], function (err) {
+                  if (err) {
+                    console.error('Ekleme hatası:', err);
+                  } if (this.changes === 0) {
+                    //console.log(` zaten var.`);
+                  } else {
+                    //console.log(`eklendi. ID:`);
+                  }
+                  //console.log("1");
+                });
+      
+      
+                await wait100();
+      
+                lite.all('SELECT actor_id FROM Actors WHERE actor = ? ', [splitCast[k]], (err, rows) => {
+                  if (err) {
+                    return console.error(err.message);
+                  }
+                  // rows dizisi içinde tüm id'leri alabiliriz
+                  //console.log(rows);
+                  //console.log(rows[0]);
+                  castIDArray.push(rows[0].actor_id);
+                  //console.log("genreıdarrayyy:  "+ genreIDArray);
+                  //console.log("2");
+                });
+      
+      
+                await wait100();
+      
+                lite.run(`INSERT INTO movieseriesactors(movie_id,actor_id)
+                      SELECT ?, ?
+                      WHERE NOT EXISTS (
+                          SELECT 1 FROM movieseriesactors WHERE movie_id = ? AND actor_id = ?
+                      )`, [relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1], relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1]], function (err) {
+                  if (err) {
+                    console.error('Ekleme hatası:', err);
+                  } if (this.changes === 0) {
+                    //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
+                  } else {
+                    //console.log(` eklendi. ID: `);
+      
+      
+                  }
+                  //console.log("3");
+                });
+                //}
+      
+                await wait100();
+      
+              }
 
 
-          await wait100();
-
-          lite.run(`INSERT INTO moviegenres(movie_id,genre_id)
-                SELECT ?, ?
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM moviegenres WHERE movie_id = ? AND genre_id = ?
-                )`, [relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1], relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
-            if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
 
 
-            }
-            //console.log("3");
-          });
-          //}
 
-          await wait100();
-
+              if (relatedMoviesDetails[i].imdbRating == 'N/A') {
+                relatedMoviesDetails[i].imdbRating = null;
+              }
+              let director = relatedMoviesDetails[i].Director;
+              //console.log("Genreeeee :  "+director);
+              let splitDirector = director.split(", ");
+              //console.log("splitttt :  "+splitDirector);          
+              lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
+                [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year,
+                relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot, splitDirector[0]], (err, res) => {
+                  if (err) {
+                    console.error('Ekleme hatası:', err);
+                  } else {
+                    console.log('Yeni kullanıcı eklendi:');
+                    //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+                  }
+                  //console.log("4");
+                });
+              //console.log("4");
+              await wait100(); 
+              
         }
-        if (relatedMoviesDetails[i].imdbRating == 'N/A') {
-          relatedMoviesDetails[i].imdbRating = null;
-        }
-        let director = relatedMoviesDetails[i].Director;
-        //console.log("Genreeeee :  "+director);
-        let splitDirector = director.split(", ");
-        //console.log("splitttt :  "+splitDirector);          
-        lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
-          [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year,
-          relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot, splitDirector[0]], (err, res) => {
-            if (err) {
-              console.error('Ekleme hatası:', err);
-            } else {
-              console.log('Yeni kullanıcı eklendi:');
-              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-            }
-            //console.log("4");
-          });
-        //console.log("4");
-        await wait100();
-
-
-      }
+    }
     });
-  }
+  
+
+ 
 
   ///// comment yazma
   if (login) {
