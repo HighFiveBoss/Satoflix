@@ -860,46 +860,67 @@ async function wait100() {
   await delay(100);
 }
 
-app.get("/favorites.ejs", (req, res) => {
+app.get("/favorites.ejs", async (req, res) => {
   let favorites = [];
 
-  lite.all("SELECT * FROM Movies JOIN Favorites ON Movies.movie_id = Favorites.movie_id WHERE Favorites.user_id = ?;", [user.user_id], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      if (rows === null) {
-        alert("Please add some movie or series to favorites");
-        res.redirect('/');
+  favorites = await new Promise((resolve, reject) => {
+    lite.all("SELECT * FROM Movies JOIN Favorites ON Movies.movie_id = Favorites.movie_id WHERE Favorites.user_id = ?;", [user.user_id], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
       } else {
         rows.forEach(row => favorites.push(row));
-        res.render('favorites.ejs', {
-          favorites: favorites,
-          login: login
-        });
+        resolve(favorites);
       }
-    }
+    });
+  });
+  favorites = await new Promise((resolve, reject) => {
+    lite.all("SELECT * FROM Series JOIN Favorites ON Series.series_id = Favorites.series_id WHERE Favorites.user_id = ?;", [user.user_id], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+      } else {
+        rows.forEach(row => favorites.push(row));
+        resolve(favorites);
+      }
+    });
+  });
+  res.render('favorites.ejs', {
+    favorites: favorites,
+    login: login
   });
 });
 
-app.get("/watchlist.ejs", (req, res) => {
+app.get("/watchlist.ejs", async (req, res) => {
   let watchlist = [];
 
-  lite.all("SELECT * FROM Movies JOIN Watchlist ON Movies.movie_id = Watchlist.movie_id WHERE watchlist.user_id = ?;", [user.user_id], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      if (rows === 'undefined') {
-        alert("Please add some movie or series to favorites");
-        res.redirect('/');
+  watchlist = await new Promise((resolve, reject) => {
+    lite.all("SELECT * FROM Movies JOIN Watchlist ON Movies.movie_id = Watchlist.movie_id WHERE Watchlist.user_id = ?;", [user.user_id], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
       } else {
         rows.forEach(row => watchlist.push(row));
-        res.render('watchlist.ejs', {
-          watchList: watchlist,
-          login: login
-        });
+        resolve(watchlist);
       }
-    }
+    });
   });
+  watchlist = await new Promise((resolve, reject) => {
+    lite.all("SELECT * FROM Series JOIN Watchlist ON Series.series_id = Watchlist.series_id WHERE Watchlist.user_id = ?;", [user.user_id], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+      } else {
+        rows.forEach(row => watchlist.push(row));
+        resolve(watchlist);
+      }
+    });
+  });
+  res.render('watchlist.ejs', {
+    watchList: watchlist,
+    login: login
+  });
+  
 });
 
 app.get("/", async (req, res) => {
