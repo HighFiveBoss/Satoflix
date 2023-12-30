@@ -31,143 +31,7 @@
     - #HEADER
   -->
 
-  <header class="header" data-header>
-    <div class="container">
-
-      <div class="overlay" data-overlay></div>
-
-      <a href="./index.ejs" class="logo">
-        <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
-      </a>
-
-      <div class="header-actions">
-
-        <div class="search-container">
-          <form id="searchForm" action="/search" method="POST">
-            <button type="button" class="search-btn">
-              <ion-icon name="search-outline"></ion-icon>
-            </button>
-            <input type="text" id="searchInput" name="searchQuery" placeholder="Search...">
-          </form>
-          <div id="searchResults" class="search-results">
-            <!-- Display search results here -->
-          </div>
-        </div>
-
-        <div class="lang-wrapper">
-          <label for="language">
-            <ion-icon name="globe-outline"></ion-icon>
-          </label>
-
-          <select name="language" id="language">
-            <option value="en">EN</option>
-            <option value="tr">TR</option>
-          </select>
-        </div>
-        <% if (!login) {%>
-          <button id="btn btn-primary" class="btn btn-primary">Log In</button>
-          <script>
-            document.getElementById('btn btn-primary').addEventListener('click', function () {
-              window.location.href = '/login.ejs';
-            });
-          </script>
-          <% } else { %>
-            <button id="profileButton" class="btn btn-primary">Profile</button>
-            <button id="favoriteButton" class="btn btn-primary"><ion-icon name="heart-outline"></ion-icon></button>
-            <button id="watchlistButton" class="btn btn-primary">
-              <ion-icon name="play-outline"></ion-icon>
-            </button>
-            <script>
-              document.getElementById('profileButton').addEventListener('click', function () {
-                window.location.href = '/profile.ejs';
-              });
-              document.getElementById('favoriteButton').addEventListener('click', function () {
-                window.location.href = '/favorites.ejs';
-              });
-              document.getElementById('watchlistButton').addEventListener('click', function () {
-                window.location.href = '/watchlist.ejs';
-            });
-            </script>
-            <% } %>
-      </div>
-
-      <button class="menu-open-btn" data-menu-open-btn>
-        <ion-icon name="reorder-two"></ion-icon>
-      </button>
-
-      <nav class="navbar" data-navbar>
-
-        <div class="navbar-top">
-
-          <a href="./index.ejs" class="logo">
-            <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
-          </a>
-
-          <button class="menu-close-btn" data-menu-close-btn>
-            <ion-icon name="close-outline"></ion-icon>
-          </button>
-
-        </div>
-
-        <ul class="navbar-list">
-
-          <li>
-            <a href="/" class="navbar-link">Home</a>
-          </li>
-
-          <li>
-            <a href="./movies.ejs" class="navbar-link">Movie</a>
-          </li>
-
-
-          <li>
-            <a href="./series.ejs" class="navbar-link">Series</a>
-          </li>
-
-          <li>
-            <a href="./best-actors.ejs" class="navbar-link">Best Actors</a>
-          </li>
-
-        </ul>
-
-        <ul class="navbar-social-list">
-
-          <li>
-            <a href="#" class="navbar-social-link">
-              <ion-icon name="logo-twitter"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="#" class="navbar-social-link">
-              <ion-icon name="logo-facebook"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="#" class="navbar-social-link">
-              <ion-icon name="logo-pinterest"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="#" class="navbar-social-link">
-              <ion-icon name="logo-instagram"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="#" class="navbar-social-link">
-              <ion-icon name="logo-youtube"></ion-icon>
-            </a>
-          </li>
-
-        </ul>
-
-      </nav>
-
-    </div>
-  </header>
+  <%- include('partials/header.ejs') %>
 
 
 
@@ -180,54 +44,52 @@
         - #HERO
       -->
 
-      <section class="hero">
+      <section class="hero" style="background: url(<%=backdrop%>) no-repeat; margin-bottom: -6%; margin-top: 6%;">
         <div class="container">
 
           <div class="hero-content">
 
-            <p class="hero-subtitle">Satoflix</p>
+            <p class="hero-subtitle">The Best Movie of 2023</p>
 
             <h1 class="h1 hero-title">
-              Unlimited <strong>Movie</strong>, TVs Shows, & More.
+              <%= heroMovie.title %>
             </h1>
 
             <div class="meta-wrapper">
 
               <div class="badge-wrapper">
-                <div class="badge badge-fill">PG 18</div>
 
                 <div class="badge badge-outline">HD</div>
               </div>
 
-              <div class="ganre-wrapper">
-                <a href="#">Romance,</a>
-
-                <a href="#">Drama</a>
-              </div>
 
               <div class="date-time">
 
                 <div>
                   <ion-icon name="calendar-outline"></ion-icon>
 
-                  <time datetime="2022">2022</time>
+                  <time datetime=<%= heroMovie.year %>><%= heroMovie.year %></time>
                 </div>
 
                 <div>
                   <ion-icon name="time-outline"></ion-icon>
 
-                  <time datetime="PT128M">128 min</time>
+                  <time datetime=<%= heroMovie.runtime %>><%= heroMovie.runtime %></time>
                 </div>
 
               </div>
 
             </div>
 
-            <button class="btn btn-primary">
-              <ion-icon name="play"></ion-icon>
-
-              <span>Watch now</span>
-            </button>
+            <form id="heroMovieForm" action="./movie-details.ejs" method="post">
+              <input type="hidden" name="movieName" value="<%= heroMovie.title %>">
+              <input type="hidden" name="movieId" value="<%= heroMovie.movie_id %>">
+              <button class="btn btn-primary">
+                <ion-icon name="play"></ion-icon>
+  
+                <span>Watch now</span>
+              </button>
+            </form>
 
           </div>
 
@@ -253,21 +115,6 @@
               <h2 class="h2 section-title">Upcoming Movies</h2>
             </div>
 
-            <ul class="filter-list">
-
-              <li>
-                <button class="filter-btn">Movies</button>
-              </li>
-
-              <li>
-                <button class="filter-btn">TV Shows</button>
-              </li>
-
-              <li>
-                <button class="filter-btn">Anime</button>
-              </li>
-
-            </ul>
 
           </div>
 
@@ -312,84 +159,6 @@
 
 
 
-      <!-- 
-        - #SERVICE
-      -->
-
-      <section class="service">
-        <div class="container">
-
-          <div class="service-banner">
-            <figure>
-              <img src="images/service-banner.jpg" alt="HD 4k resolution! only $3.99">
-            </figure>
-
-            <a href="images/service-banner.jpg" download class="service-btn">
-              <span>Download</span>
-
-              <ion-icon name="download-outline"></ion-icon>
-            </a>
-          </div>
-
-          <div class="service-content">
-
-            <p class="service-subtitle">Our Services</p>
-
-            <h2 class="h2 service-title">Download Your Shows Watch Offline.</h2>
-
-            <p class="service-text">
-              Lorem ipsum dolor sit amet, consecetur adipiscing elseddo eiusmod tempor.There are many variations of
-              passages of lorem
-              Ipsum available, but the majority have suffered alteration in some injected humour.
-            </p>
-
-            <ul class="service-list">
-
-              <li>
-                <div class="service-card">
-
-                  <div class="card-icon">
-                    <ion-icon name="tv"></ion-icon>
-                  </div>
-
-                  <div class="card-content">
-                    <h3 class="h3 card-title">Enjoy on Your TV.</h3>
-
-                    <p class="card-text">
-                      Lorem ipsum dolor sit amet, consecetur adipiscing elit, sed do eiusmod tempor.
-                    </p>
-                  </div>
-
-                </div>
-              </li>
-
-              <li>
-                <div class="service-card">
-
-                  <div class="card-icon">
-                    <ion-icon name="videocam"></ion-icon>
-                  </div>
-
-                  <div class="card-content">
-                    <h3 class="h3 card-title">Watch Everywhere.</h3>
-
-                    <p class="card-text">
-                      Lorem ipsum dolor sit amet, consecetur adipiscing elit, sed do eiusmod tempor.
-                    </p>
-                  </div>
-
-                </div>
-              </li>
-
-            </ul>
-
-          </div>
-
-        </div>
-      </section>
-
-
-
 
 
       <!-- 
@@ -403,25 +172,6 @@
 
           <h2 class="h2 section-title">Top Rated Movies</h2>
 
-          <ul class="filter-list">
-
-            <li>
-              <button class="filter-btn">Movies</button>
-            </li>
-
-            <li>
-              <button class="filter-btn">TV Shows</button>
-            </li>
-
-            <li>
-              <button class="filter-btn">Documentary</button>
-            </li>
-
-            <li>
-              <button class="filter-btn">Sports</button>
-            </li>
-
-          </ul>
 
           <ul class="movies-list">
             <% topRatedMovies.forEach((movie, index)=> { %>
@@ -556,29 +306,6 @@
 
 
 
-      <!-- 
-        - #CTA
-      -->
-
-      <section class="cta">
-        <div class="container">
-
-          <div class="title-wrapper">
-            <h2 class="cta-title">Trial start first 30 days.</h2>
-
-            <p class="cta-text">
-              Enter your email to create or restart your membership.
-            </p>
-          </div>
-
-          <form action="" class="cta-form">
-            <input type="email" name="email" required placeholder="Enter your email" class="email-field">
-
-            <button type="submit" class="cta-form-btn">Get started</button>
-          </form>
-
-        </div>
-      </section>
 
     </article>
   </main>
@@ -591,110 +318,7 @@
     - #FOOTER
   -->
 
-  <footer class="footer">
-
-    <div class="footer-top">
-      <div class="container">
-
-        <div class="footer-brand-wrapper">
-
-          <a href="./index.ejs" class="logo">
-            <img src="images/SATOFLIXlogo.png" alt="Satoflix logo">
-          </a>
-
-          <ul class="footer-list">
-
-            <li>
-              <a href="/" class="footer-link">Home</a>
-            </li>
-
-            <li>
-              <a href="./movies.ejs" class="footer-link">Movie</a>
-            </li>
-
-            <li>
-              <a href="./series.ejs" class="footer-link">Series</a>
-            </li>
-
-
-            <li>
-              <a href="./best-actors.ejs" class="navbar-link">Best Actors</a>
-            </li>
-
-          </ul>
-
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="quicklink-wrapper">
-
-          <ul class="quicklink-list">
-
-            <li>
-              <a href="#" class="quicklink-link">Faq</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Help center</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Terms of use</a>
-            </li>
-
-            <li>
-              <a href="#" class="quicklink-link">Privacy</a>
-            </li>
-
-          </ul>
-
-          <ul class="social-list">
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-facebook"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-twitter"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-pinterest"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-            </li>
-
-          </ul>
-
-        </div>
-
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="container">
-
-        <p class="copyright">
-          &copy; 2022 <a href="#">SATOFLIX</a>. All Rights Reserved
-        </p>
-
-        <img src="images/footer-bottom-img.png" alt="Online banking companies logo" class="footer-bottom-img">
-
-      </div>
-    </div>
-
-  </footer>
+  <%- include('partials/footer.ejs') %>
 
 
 

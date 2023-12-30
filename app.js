@@ -260,6 +260,7 @@ app.get("/movies.ejs", async (req, res) => {
   await waitOneSec();
 
   res.render("movies.ejs", {
+    login: login,
     moviesgenres: moviesgenres,
     categoryCounter: categoryCounter
   });
@@ -632,6 +633,7 @@ app.get("/series.ejs", async (req, res) => {
   await waitOneSec();
 
   res.render("series.ejs", {
+    login: login,
     seriesgenres: seriesgenres,
     categoryCounter: categoryCounter
   });
@@ -676,6 +678,7 @@ app.get("/best-actors.ejs", async (req, res) => {
   await waitOneSec();
 
   res.render("best-actors.ejs", {
+    login: login,
     bestActors: bestActors,
     actorCounter: actorCounter
   });
@@ -947,9 +950,24 @@ app.get("/", async (req, res) => {
 
   topRatedSeries = await getAll("SELECT * FROM Series WHERE imdb_rating > 0 ORDER BY imdb_rating DESC LIMIT 4", []);
 
+  const heroMovie = await new Promise((resolve, reject) => {
+    lite.get('SELECT * FROM Movies WHERE movie_id = ?;',
+      ['tt15398776'], (err, res) => {
+        if (err) {
+          console.error('An error has accorded : ', err);
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+  });
+  const heroMovieBackdrop = "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/fm6KqXpk3M2HVveHwCrBSSBaO0V.jpg";
+
   res.render("index.ejs", {
 
     login: login,
+    heroMovie: heroMovie,
+    backdrop: heroMovieBackdrop,
     upcomingMovies: upcomingMovies,
     topRatedMovies: topRatedMovies,
     topRatedSeries: topRatedSeries

@@ -1204,9 +1204,9 @@ body.active {
 
 .comment-box,
 .post-comment .list {
-  background: #fff;
+  background: #1e2328; /* Slightly darker than the page background */
   border-radius: 6px;
-  box-shadow: 0 2px 2px #0002;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
 }
 
 .comment-session {
@@ -1229,14 +1229,17 @@ body.active {
 .comment-session .name {
   text-transform: uppercase;
   font-weight: 500;
+  color: #fff; /* White text color */
 }
 
 .post-comment .list .day {
-  font-size: 12px;
+  font-size: 14px; /* Increased font size for better visibility */
+  color: #888; /* Adjusted color for better contrast */
 }
 
 .post-comment .comment-post {
   padding: 0 0 15px 58px;
+  color: #fff; /* White text color */
 }
 
 .comment-box {
@@ -1250,18 +1253,21 @@ body.active {
 }
 
 .comment-box textarea {
-  background: #eee;
+  background: #29343d; /* Darker background */
   width: -webkit-fill-available;
-  height: 152px;
+  height: 200px; /* Adjusted height for a larger textarea */
   margin: 10px 0;
   padding: 10px;
   resize: inherit;
   border-radius: 5px;
-  box-shadow: 0 0 0 1px #0003;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  color: #fff; /* White text color */
+  font-size: 16px; /* Adjusted font size */
 }
 
+
 .comment-box textarea:focus-visible {
-  box-shadow: inset 0 0 0 1px #009cff;
+  box-shadow: inset 0 0 0 1px #009cff; /* Accent color on focus */
   outline: none;
 }
 
@@ -1269,15 +1275,16 @@ body.active {
   float: right;
   padding: 6px 10px;
   border: none;
-  background: #009cff;
-  color: #eee;
+  background: #ff0000; /* Accent color */
+  color: #fff; /* White text color */
   cursor: pointer;
   border-radius: 3px;
 }
 
 .comment-box .comment-submit:hover {
-  background: #0076bf;
+  background: #cc0000; /* Darker accent color on hover */
 }
+
 
 
 /*-----------------------------------*\
