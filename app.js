@@ -238,26 +238,24 @@ app.get("/movies.ejs", async (req, res) => {
     JOIN Genres ON moviegenres.genre_id = Genres.genre_id;
 `;
 
-  lite.all(query, [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return;
-    }
-    console.log("moviesssssss:");
-    moviesgenres = rows;
-    console.log(moviesgenres);
-    moviesgenres.forEach((row) => {
-      const category = row.genre;
-      if (!categoryCounter[category]) {
-        categoryCounter[category] = 0;
+  await new Promise((resolve, reject) => {
+    lite.all(query, [], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+        return;
       }
-      categoryCounter[category]++;
+      moviesgenres = rows;
+      moviesgenres.forEach((row) => {
+        const category = row.genre;
+        if (!categoryCounter[category]) {
+          categoryCounter[category] = 0;
+        }
+        categoryCounter[category]++;
+      });
+      resolve(console.log(categoryCounter));
     });
-    console.log("Category Counter:", categoryCounter);
-
   });
-
-  await waitOneSec();
 
   res.render("movies.ejs", {
     login: login,
@@ -611,26 +609,25 @@ app.get("/series.ejs", async (req, res) => {
     JOIN Genres ON seriesgenres.genre_id = Genres.genre_id;
 `;
 
-  lite.all(query, [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return;
-    }
-    console.log("seriessssss:");
-    seriesgenres = rows;
-    console.log(seriesgenres);
-    seriesgenres.forEach((row) => {
-      const category = row.genre;
-      if (!categoryCounter[category]) {
-        categoryCounter[category] = 0;
+  await new Promise((resolve, reject) => {
+    lite.all(query, [], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+        return;
       }
-      categoryCounter[category]++;
+      seriesgenres = rows;
+      seriesgenres.forEach((row) => {
+        const category = row.genre;
+        if (!categoryCounter[category]) {
+          categoryCounter[category] = 0;
+        }
+        categoryCounter[category]++;
+      });
+      resolve();
     });
-    console.log("Category Counter:", categoryCounter);
-
   });
-
-  await waitOneSec();
+  
 
   res.render("series.ejs", {
     login: login,
@@ -657,25 +654,23 @@ app.get("/best-actors.ejs", async (req, res) => {
   ORDER BY actor_id, movie_id, imdb_rating DESC  
 `;
 
-  lite.all(query, [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return;
-    }
-    //console.log("seriessssss:");
-    bestActors = rows;
-    //console.log(bestActors);
-    
-    for(let i=0;i<bestActors.length;i++){
-      if(bestActors[i].row_num==1){
-        actorCounter.push(bestActors[i].actor);
-        //console.log(bestActors[i].actor);
+  await new Promise((resolve, reject) => {
+    lite.all(query, [], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+        return;
       }
-    }
-
+      bestActors = rows;
+      for(let i=0;i<bestActors.length;i++){
+        if(bestActors[i].row_num==1){
+          actorCounter.push(bestActors[i].actor);
+        }
+      }
+      resolve();
+    });
   });
 
-  await waitOneSec();
 
   res.render("best-actors.ejs", {
     login: login,
@@ -755,43 +750,37 @@ app.post('/login.ejs', async (req, res) => {
   const password = req.body.password;
   let flag = false;
 
-  console.log(email);
-  console.log(password);
+  await new Promise((resolve, reject) => {
+    lite.all(
+      `SELECT Users.*, Role.*
+           FROM Users
+           JOIN Role ON Users.role_id = Role.role_id
+           WHERE Users.email = ? AND Users.password = ?`,
+      [email, password],
+      (err, res) => {
+        if (err) {
+          console.error('Hata:', err);
+          reject(err);
+        } else {
+          user = res[0];
+        }
+        if (res.length > 0 && res[0].role_name == "user") {
+          //res.redirect('/');
+          flag = true;
+        }
+        else if (res.length > 0 && res[0].role_name == "admin") {
+          //res.redirect('/');
+          flag = true;
+        }
+        else {
+          console.log("Login Failed! your username or password is incorrect please try again.");
+        }
+        resolve();
+      }
+    );
+  });
 
-  lite.all(
-    `SELECT Users.*, Role.*
-         FROM Users
-         JOIN Role ON Users.role_id = Role.role_id
-         WHERE Users.email = ? AND Users.password = ?`,
-    [email, password],
-    (err, res) => {
-      if (err) {
-        console.error('Hata:', err);
-      } else {
-        //console.log('Sonuçlar:', res.rows);
-        user = res[0];
-      }
-      if (res.length > 0 && res[0].role_name == "user") {
-        console.log("user : " + res[0].username + " log in");
-        //res.redirect('/');
-        flag = true;
-        console.log("sorgu içi flag: " + flag);
-      }
-      else if (res.length > 0 && res[0].role_name == "admin") {
-        console.log("admin : " + res[0].username + " log in");
-        //res.redirect('/');
-        flag = true;
-      }
-      else {
-        console.log("Login Failed! your username or password is incorrect please try again.");
-      }
-    }
-  );
-
-  await waitOneSec();
-  console.log("wait önce si flag: " + flag);
   if (flag) {
-    console.log("if flag içeri : " + flag);
     res.redirect('/');
     login = true;
   }
@@ -850,10 +839,6 @@ app.post('/register.ejs', (req, res) => {
 
 function delay(time) {
   return new Promise(resolve => setTimeout(resolve, time));
-}
-
-async function waitOneSec() {
-  await delay(1000);
 }
 
 async function wait100() {
