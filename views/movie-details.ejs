@@ -109,7 +109,7 @@
                   <ion-icon name="time-outline"></ion-icon>
 
                   <time>
-                    <%= movieDetails.Runtime.slice(0, -4) %>
+                    <%= movieDetails.Runtime %>
                   </time>
                 </div>
 
@@ -251,8 +251,8 @@
 
                     <div class="duration">
                       <ion-icon name="time-outline"></ion-icon>
-                      <time datetime="PT<%= series.Runtime.slice(0, -4) %>M">
-                        <%= series.Runtime.slice(0, -4) %>
+                      <time datetime="PT<%= series.Runtime %>">
+                        <%= series.Runtime %>
                       </time>
                     </div>
 

@@ -823,19 +823,7 @@ app.get("/", async (req, res) => {
 */
 
 
-  // upcomingMovies = await new Promise((resolve, reject) => {
-  //   lite.all("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", [], (err, rows) => {
-  //   if (err) {
-  //     console.error(err.message);
-  //     reject(err);
-  //   } else {
-  //     resolve(rows);
-  //   }
-  //   });
-  // });
-
-
-  upcomingMovies = await getAll("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2023' OR year = '2024');", []);
+  upcomingMovies = await getAll("SELECT * FROM Movies WHERE imdb_rating IS NULL AND (year = '2024' OR year = '2025');", []);
 
 
 
