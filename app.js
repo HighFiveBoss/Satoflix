@@ -24,7 +24,7 @@ const lite = new sqlite3.Database('satoflix.db', sqlite3.OPEN_READWRITE, (err) =
   if (err) {
     console.error(err.message);
   } else {
-    console.log('SQLite veritabanına bağlandı. sqlite');
+    console.log('Connect to SQLite database');
   }
 });
 
@@ -39,7 +39,7 @@ const currentMonth = currentDate.getMonth() + 1;
 const currentDay = currentDate.getDate();
 
 const date = currentDay + "-" + currentMonth + "-" + currentYear;
-console.log(date);
+
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -253,7 +253,7 @@ app.get("/movies.ejs", async (req, res) => {
         }
         categoryCounter[category]++;
       });
-      resolve(console.log(categoryCounter));
+      resolve();
     });
   });
 
@@ -270,7 +270,6 @@ app.post('/search', async (req, res) => {
   const search = req.body.searchQuery;
   const resultList = await getMovieByName(search);
 
-  console.log(resultList);
 
 
   if(resultList.Response === 'True'){
@@ -280,14 +279,10 @@ app.post('/search', async (req, res) => {
     lite.serialize(async () => {
 
         let genre = movieDetails.Genre;
-        //console.log("Genreeeee :  "+genre);
         let splitGenre = genre.split(", ");
-        //console.log("splitttt :  "+splitGenre);
 
         let cast = movieDetails.Actors;
-        //console.log("cast :  "+cast);
         let splitCast = cast.split(", ");
-        //console.log("splitCast :  "+splitCast);
 
         for (let j = 0; j < splitGenre.length; j++) {
           lite.run(`INSERT INTO Genres(genre)
@@ -296,13 +291,8 @@ app.post('/search', async (req, res) => {
                 SELECT 1 FROM Genres WHERE genre = ?
             )`, [splitGenre[j], splitGenre[j]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -312,12 +302,7 @@ app.post('/search', async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             genreIDArray.push(rows[0].genre_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -329,17 +314,9 @@ app.post('/search', async (req, res) => {
                     SELECT 1 FROM seriesgenres WHERE series_id = ? AND genre_id = ?
                 )`, [movieDetails.imdbID, genreIDArray[genreIDArray.length - 1], movieDetails.imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
+              console.error('ERROR:', err);
             }
-            //console.log("3");
           });
-          //}
 
           await wait100();
 
@@ -352,13 +329,8 @@ app.post('/search', async (req, res) => {
                 SELECT 1 FROM Actors WHERE actor = ?
             )`, [splitCast[k], splitCast[k]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -368,12 +340,7 @@ app.post('/search', async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             castIDArray.push(rows[0].actor_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -385,17 +352,9 @@ app.post('/search', async (req, res) => {
                     SELECT 1 FROM movieseriesactors WHERE series_id = ? AND actor_id = ?
                 )`, [movieDetails.imdbID, castIDArray[castIDArray.length - 1], movieDetails.imdbID, castIDArray[castIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
+              console.error('ERROR:', err);
             }
-            //console.log("3");
           });
-          //}
 
           await wait100();
 
@@ -406,21 +365,15 @@ app.post('/search', async (req, res) => {
           movieDetails.imdbRating = null;
         }
         let director = movieDetails.Director;
-        //console.log("Genreeeee :  "+director);
         let splitDirector = director.split(", ");
-        //console.log("splitttt :  "+splitDirector);          
+      
         lite.run('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (series_id) DO NOTHING RETURNING *',
           [movieDetails.imdbID, movieDetails.Title, movieDetails.Poster, movieDetails.Year,
             movieDetails.Runtime, movieDetails.imdbRating, movieDetails.Plot, splitDirector[0]], (err, res) => {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } else {
-              console.log('Yeni kullanıcı eklendi:');
-              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-            }
-            //console.log("4");
+              console.error('ERROR:', err);
+            } 
           });
-        //console.log("4");
         await wait100();
 
 
@@ -432,14 +385,10 @@ app.post('/search', async (req, res) => {
      
 
         let genre = movieDetails.Genre;
-        //console.log("Genreeeee :  "+genre);
         let splitGenre = genre.split(", ");
-        //console.log("splitttt :  "+splitGenre);
 
         let cast = movieDetails.Actors;
-        //console.log("cast :  "+cast);
         let splitCast = cast.split(", ");
-        //console.log("splitCast :  "+splitCast);
 
         for (let j = 0; j < splitGenre.length; j++) {
           lite.run(`INSERT INTO Genres(genre)
@@ -448,13 +397,8 @@ app.post('/search', async (req, res) => {
                 SELECT 1 FROM Genres WHERE genre = ?
             )`, [splitGenre[j], splitGenre[j]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -464,12 +408,7 @@ app.post('/search', async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             genreIDArray.push(rows[0].genre_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -481,17 +420,9 @@ app.post('/search', async (req, res) => {
                     SELECT 1 FROM moviegenres WHERE movie_id = ? AND genre_id = ?
                 )`, [movieDetails.imdbID, genreIDArray[genreIDArray.length - 1], movieDetails.imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
+              console.error('ERROR:', err);
             }
-            //console.log("3");
           });
-          //}
 
           await wait100();
 
@@ -504,13 +435,8 @@ app.post('/search', async (req, res) => {
                 SELECT 1 FROM Actors WHERE actor = ?
             )`, [splitCast[k], splitCast[k]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -520,12 +446,7 @@ app.post('/search', async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             castIDArray.push(rows[0].actor_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -537,17 +458,9 @@ app.post('/search', async (req, res) => {
                     SELECT 1 FROM movieseriesactors WHERE movie_id = ? AND actor_id = ?
                 )`, [movieDetails.imdbID, castIDArray[castIDArray.length - 1], movieDetails.imdbID, castIDArray[castIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
+              console.error('ERROR:', err);
             }
-            //console.log("3");
           });
-          //}
 
           await wait100();
 
@@ -558,25 +471,17 @@ app.post('/search', async (req, res) => {
           movieDetails.imdbRating = null;
         }
         let director = movieDetails.Director;
-        //console.log("Genreeeee :  "+director);
         let splitDirector = director.split(", ");
-        //console.log("splitttt :  "+splitDirector);          
+                 
         lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
           [movieDetails.imdbID, movieDetails.Title, movieDetails.Poster, movieDetails.Year,
             movieDetails.Runtime, movieDetails.imdbRating, movieDetails.Plot, splitDirector[0]], (err, res) => {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } else {
-              console.log('Yeni kullanıcı eklendi:');
-              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
-            }
-            //console.log("4");
+              console.error('ERROR:', err);
+            } 
           });
-        //console.log("4");
         await wait100();
 
-
-      
     });
   }
   }
@@ -684,7 +589,7 @@ app.post('/profile.ejs', async (req, res) => {
   const email = req.body.email;
   const username = req.body.username;
   let formId = req.body.form_id;
-  console.log(formId);
+  
 
   if (formId === 'logOutButton') {
     login = false;
@@ -708,13 +613,11 @@ app.post('/profile.ejs', async (req, res) => {
           if (err) {
             return console.error(err.message);
           }
-          console.log('Güncellenmiş satır:', row);
           user = row[0];
-          // Burada güncellenmiş satır verisini kullanabilirsin
         });
       });
     } catch (err) {
-      console.error('Hata:', err);
+      console.error('Error:', err);
     }
   }
 
@@ -727,13 +630,12 @@ app.post('/password.ejs', async (req, res) => {
 
   lite.run(`UPDATE Users SET password = ? WHERE user_id = ?`, [password, user.user_id], function (err) {
     if (err) {
-      console.error('Hata:', err.message);
+      console.error('Error:', err.message);
     } else {
       lite.get('SELECT * FROM Users WHERE user_id = ?', [user.user_id], (err, row) => {
         if (err) {
-          console.error('Hata:', err.message);
+          console.error('Error:', err.message);
         } else {
-          console.log('Güncellenen satır:', row);
           user = row;
         }
       });
@@ -759,7 +661,7 @@ app.post('/login.ejs', async (req, res) => {
       [email, password],
       (err, res) => {
         if (err) {
-          console.error('Hata:', err);
+          console.error('Error:', err);
           reject(err);
         } else {
           user = res[0];
@@ -796,39 +698,26 @@ app.post('/register.ejs', (req, res) => {
   const email = req.body.email;
   let roleid;
 
-  console.log(email);
-  console.log(username);
-  console.log(password);
 
   lite.run('INSERT INTO Role(role_name) VALUES(?) RETURNING *',
     ["user"], (err, res) => {
       if (err) {
-        console.error('Ekleme hatası:', err);
-      } else {
-        console.log('Yeni kullanıcı eklendi:');
-        //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+        console.error('ERROR:', err);
       }
     });
 
   lite.all('SELECT role_id FROM Role ORDER BY role_id DESC LIMIT 1', [], (err, res) => {
     if (err) {
-      console.error('Hata:', err);
+      console.error('ERROR:', err);
     } else {
-      //console.log('Son eklenen veri:', res.rows[0]);
-      console.log('Son eklenen veri:', res[0]);
       roleid = res[0];
       let roleidString = roleid.role_id.toString();
       let roleidINTEGER = parseInt(roleidString);
 
-      console.log("sdsadsdadsasad" + typeof roleidINTEGER);
-      console.log("aaaaaaaaaaaaaa" + roleidINTEGER);
       lite.run('INSERT INTO Users(username, email, password, role_id) VALUES(?, ?, ?, ?) RETURNING *',
         [username, email, password, roleidINTEGER], (err, res) => {
           if (err) {
-            console.error('Ekleme hatası:', err);
-          } else {
-            console.log('Yeni kullanıcı eklendi:');
-            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+            console.error('ERROR:', err);
           }
         });
     }
@@ -999,9 +888,6 @@ app.post("/movie-details.ejs", async (req, res) => {
       return { imdbID, Title, Poster, Year, Runtime, imdbRating, Plot, Genre, Director , Type, Actors };
     })
   );
-  //console.log(relatedMoviesDetails);
-
-
 
     //await waitOneSec();
     lite.serialize(async () => {
@@ -1011,14 +897,10 @@ app.post("/movie-details.ejs", async (req, res) => {
         if (relatedMoviesDetails[i].Type === "series") {
 
         let genre = relatedMoviesDetails[i].Genre;
-        //console.log("Genreeeee :  "+genre);
         let splitGenre = genre.split(", ");
-        //console.log("splitttt :  "+splitGenre);
 
         let cast = relatedMoviesDetails[i].Actors;
-        //console.log("cast :  "+cast);
         let splitCast = cast.split(", ");
-        //console.log("splitCast :  "+splitCast);
 
         for (let j = 0; j < splitGenre.length; j++) {
           lite.run(`INSERT INTO Genres(genre)
@@ -1027,13 +909,8 @@ app.post("/movie-details.ejs", async (req, res) => {
                 SELECT 1 FROM Genres WHERE genre = ?
             )`, [splitGenre[j], splitGenre[j]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -1043,12 +920,7 @@ app.post("/movie-details.ejs", async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             genreIDArray.push(rows[0].genre_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -1060,17 +932,9 @@ app.post("/movie-details.ejs", async (req, res) => {
                     SELECT 1 FROM seriesgenres WHERE series_id = ? AND genre_id = ?
                 )`, [relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1], relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
-            }
-            //console.log("3");
+              console.error('ERROR:', err);
+            } 
           });
-          //}
 
           await wait100();
 
@@ -1085,13 +949,8 @@ app.post("/movie-details.ejs", async (req, res) => {
                 SELECT 1 FROM Actors WHERE actor = ?
             )`, [splitCast[k], splitCast[k]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zaten var.`);
-            } else {
-              //console.log(`eklendi. ID:`);
+              console.error('ERROR:', err);
             }
-            //console.log("1");
           });
 
 
@@ -1101,12 +960,7 @@ app.post("/movie-details.ejs", async (req, res) => {
             if (err) {
               return console.error(err.message);
             }
-            // rows dizisi içinde tüm id'leri alabiliriz
-            //console.log(rows);
-            //console.log(rows[0]);
             castIDArray.push(rows[0].actor_id);
-            //console.log("genreıdarrayyy:  "+ genreIDArray);
-            //console.log("2");
           });
 
 
@@ -1118,17 +972,9 @@ app.post("/movie-details.ejs", async (req, res) => {
                     SELECT 1 FROM movieseriesactors WHERE series_id = ? AND actor_id = ?
                 )`, [relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1], relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1]], function (err) {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } if (this.changes === 0) {
-              //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-            } else {
-              //console.log(` eklendi. ID: `);
-
-
+              console.error('ERROR:', err);
             }
-            //console.log("3");
           });
-          //}
 
           await wait100();
 
@@ -1141,38 +987,28 @@ app.post("/movie-details.ejs", async (req, res) => {
           relatedMoviesDetails[i].imdbRating = null;
         }
         let director = relatedMoviesDetails[i].Director;
-        //console.log("Genreeeee :  "+director);
         let splitDirector = director.split(", ");
-        //console.log("splitttt :  "+splitDirector);          
+            
         lite.run('INSERT INTO Series(series_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (series_id) DO NOTHING RETURNING *',
           [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year,
           relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot, splitDirector[0]], (err, res) => {
             if (err) {
-              console.error('Ekleme hatası:', err);
-            } else {
-              console.log('Yeni kullanıcı eklendi:');
-              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+              console.error('ERROR:', err);
             }
-            //console.log("4");
           });
-        //console.log("4");
         await wait100();
 
 
       }
 
         else if (relatedMoviesDetails[i].Type === "movie") {
+
               let genre = relatedMoviesDetails[i].Genre;
-              //console.log("Genreeeee :  "+genre);
               let splitGenre = genre.split(", ");
-              //console.log("splitttt :  "+splitGenre);
 
               let cast = relatedMoviesDetails[i].Actors;
-              //console.log("cast :  "+cast);
               let splitCast = cast.split(", ");
-              //console.log("splitCast :  "+splitCast);
 
-      
               for (let j = 0; j < splitGenre.length; j++) {
                 lite.run(`INSERT INTO Genres(genre)
                   SELECT ?
@@ -1180,13 +1016,8 @@ app.post("/movie-details.ejs", async (req, res) => {
                       SELECT 1 FROM Genres WHERE genre = ?
                   )`, [splitGenre[j], splitGenre[j]], function (err) {
                   if (err) {
-                    console.error('Ekleme hatası:', err);
-                  } if (this.changes === 0) {
-                    //console.log(` zaten var.`);
-                  } else {
-                    //console.log(`eklendi. ID:`);
+                    console.error('ERROR:', err);
                   }
-                  //console.log("1");
                 });
       
       
@@ -1196,12 +1027,7 @@ app.post("/movie-details.ejs", async (req, res) => {
                   if (err) {
                     return console.error(err.message);
                   }
-                  // rows dizisi içinde tüm id'leri alabiliriz
-                  //console.log(rows);
-                  //console.log(rows[0]);
                   genreIDArray.push(rows[0].genre_id);
-                  //console.log("genreıdarrayyy:  "+ genreIDArray);
-                  //console.log("2");
                 });
       
       
@@ -1213,23 +1039,13 @@ app.post("/movie-details.ejs", async (req, res) => {
                           SELECT 1 FROM moviegenres WHERE movie_id = ? AND genre_id = ?
                       )`, [relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1], relatedMoviesDetails[i].imdbID, genreIDArray[genreIDArray.length - 1]], function (err) {
                   if (err) {
-                    console.error('Ekleme hatası:', err);
-                  } if (this.changes === 0) {
-                    //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-                  } else {
-                    //console.log(` eklendi. ID: `);
-      
-      
-                  }
-                  //console.log("3");
+                    console.error('ERROR:', err);
+                  } 
                 });
-                //}
       
                 await wait100();
       
               }
-
-
 
               for (let k = 0; k < splitCast.length; k++) {
                 lite.run(`INSERT INTO Actors(actor)
@@ -1238,13 +1054,8 @@ app.post("/movie-details.ejs", async (req, res) => {
                       SELECT 1 FROM Actors WHERE actor = ?
                   )`, [splitCast[k], splitCast[k]], function (err) {
                   if (err) {
-                    console.error('Ekleme hatası:', err);
-                  } if (this.changes === 0) {
-                    //console.log(` zaten var.`);
-                  } else {
-                    //console.log(`eklendi. ID:`);
+                    console.error('ERROR:', err);
                   }
-                  //console.log("1");
                 });
       
       
@@ -1254,12 +1065,7 @@ app.post("/movie-details.ejs", async (req, res) => {
                   if (err) {
                     return console.error(err.message);
                   }
-                  // rows dizisi içinde tüm id'leri alabiliriz
-                  //console.log(rows);
-                  //console.log(rows[0]);
                   castIDArray.push(rows[0].actor_id);
-                  //console.log("genreıdarrayyy:  "+ genreIDArray);
-                  //console.log("2");
                 });
       
       
@@ -1271,45 +1077,26 @@ app.post("/movie-details.ejs", async (req, res) => {
                           SELECT 1 FROM movieseriesactors WHERE movie_id = ? AND actor_id = ?
                       )`, [relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1], relatedMoviesDetails[i].imdbID, castIDArray[castIDArray.length - 1]], function (err) {
                   if (err) {
-                    console.error('Ekleme hatası:', err);
-                  } if (this.changes === 0) {
-                    //console.log(` zatenNNNNNNNNN varRRRRRRR.`);
-                  } else {
-                    //console.log(` eklendi. ID: `);
-      
-      
+                    console.error('ERROR:', err);
                   }
-                  //console.log("3");
                 });
-                //}
-      
                 await wait100();
-      
               }
-
-
-
 
 
               if (relatedMoviesDetails[i].imdbRating == 'N/A') {
                 relatedMoviesDetails[i].imdbRating = null;
               }
               let director = relatedMoviesDetails[i].Director;
-              //console.log("Genreeeee :  "+director);
               let splitDirector = director.split(", ");
-              //console.log("splitttt :  "+splitDirector);          
+      
               lite.run('INSERT INTO Movies(movie_id, title, poster, year, runtime, imdb_rating, plot, director) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (movie_id) DO NOTHING RETURNING *',
                 [relatedMoviesDetails[i].imdbID, relatedMoviesDetails[i].Title, relatedMoviesDetails[i].Poster, relatedMoviesDetails[i].Year,
                 relatedMoviesDetails[i].Runtime, relatedMoviesDetails[i].imdbRating, relatedMoviesDetails[i].Plot, splitDirector[0]], (err, res) => {
                   if (err) {
-                    console.error('Ekleme hatası:', err);
-                  } else {
-                    console.log('Yeni kullanıcı eklendi:');
-                    //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
+                    console.error('ERROR:', err);
                   }
-                  //console.log("4");
                 });
-              //console.log("4");
               await wait100(); 
               
         }
@@ -1319,7 +1106,7 @@ app.post("/movie-details.ejs", async (req, res) => {
 
  
 
-  ///// comment yazma
+  ///// write cooment
   if (login) {
     let comment = req.body.comment;
     const favMovId = req.body.favMovieId;
@@ -1329,19 +1116,15 @@ app.post("/movie-details.ejs", async (req, res) => {
       lite.run('INSERT INTO Reviews(comment, date, user_id, movie_id) VALUES(?, ?, ?, ?) RETURNING *',
         [comment, date, user.user_id, id], (err, res) => {
           if (err) {
-            console.error('Ekleme hatası:', err);
-          } else {
-            console.log('Yeni kullanıcı eklendi:');
+            console.error('ERROR:', err);
           }
         });
     } else if (typeof comment !== 'undefined' && movieDetails.Type === "series") {
       lite.run('INSERT INTO Reviews(comment, date, user_id, series_id) VALUES(?, ?, ?, ?) RETURNING *',
         [comment, date, user.user_id, id], (err, res) => {
           if (err) {
-            console.error('Ekleme hatası:', err);
-          } else {
-            console.log('Yeni kullanıcı eklendi:');
-          }
+            console.error('ERROR:', err);
+          } 
         });
     }
     if (typeof favMovId !== 'undefined' && movieDetails.Type === 'movie') {
@@ -1368,7 +1151,6 @@ app.post("/movie-details.ejs", async (req, res) => {
                 console.error('An error has accorded : ', err);
                 reject(err);
               } else {
-                console.log("Successfully deleted movie/series to favorites");
                 isFavMovie = false;
                 resolve();
               }
@@ -1380,9 +1162,6 @@ app.post("/movie-details.ejs", async (req, res) => {
           [user.user_id, id, user.user_id, id], (err, res) => {
             if (err) {
               console.error('An error has accorded : ', err);
-            } else {
-              console.log("Successfully added movie/series to favorites");
-              //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
             }
           });
       }
@@ -1391,9 +1170,6 @@ app.post("/movie-details.ejs", async (req, res) => {
         [user.user_id, id, user.user_id, id], (err, res) => {
           if (err) {
             console.error('An error has accorded : ', err);
-          } else {
-            console.log("Successfully added movie/series to favorites");
-            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
           }
         });
     }
@@ -1420,7 +1196,6 @@ app.post("/movie-details.ejs", async (req, res) => {
                 console.error('An error has accorded : ', err);
                 reject(err);
               } else {
-                console.log("Successfully deleted movie/series to watchlist");
                 inWatchlist = false;
                 resolve();
               }
@@ -1431,9 +1206,6 @@ app.post("/movie-details.ejs", async (req, res) => {
         [user.user_id, id, user.user_id, id], (err, res) => {
           if (err) {
             console.error('An error has accorded : ', err);
-          } else {
-            console.log("Successfully added movie/series to favorites");
-            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
           }
         });
       }
@@ -1442,9 +1214,6 @@ app.post("/movie-details.ejs", async (req, res) => {
         [user.user_id, id, user.user_id, id], (err, res) => {
           if (err) {
             console.error('An error has accorded : ', err);
-          } else {
-            console.log("Successfully added movie/series to favorites");
-            //console.log('Yeni kullanıcı eklendi:', res.rows[0]);
           }
         });
     }
@@ -1481,7 +1250,7 @@ app.post("/movie-details.ejs", async (req, res) => {
   //   res.redirect("/register.ejs")
   // }
 
-  //// comment okuma
+  //// read comment
   if (movieDetails.Type === "movie") {
     let query = `
       SELECT Reviews.comment, Users.username, Reviews.date
