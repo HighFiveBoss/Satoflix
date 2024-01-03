@@ -59,4 +59,4 @@ jobs:
           app-name: 'satoflix-test'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AFD2E5BD84194C4682DEE49D7B52BA60 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_3BE29DED7C264787AB25225181B6255B }}
