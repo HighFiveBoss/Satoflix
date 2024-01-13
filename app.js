@@ -6,8 +6,8 @@ import sqlite3 from 'sqlite3';
 
 const app = express();
 const port = 3000;
-const APIKey0 = 'e0aa5baafamshba73e975ca7ffdcp19f192jsneed6227668f7';
-const APIKey1 = '42c5decb58msh74886a334bd2607p10ef77jsna37889a6a2ce';
+const APIKey0 = '';
+const APIKey1 = '';
 
 /*
 const db = new pg.Client({
